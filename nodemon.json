@@ -1,0 +1,12 @@
+{
+    "watch": [
+       "/dist/*"
+    ],
+    "ignore": [
+        "/src/*",
+        "/node_modules/*"
+    ],
+    "env": {
+        "__DEV__": "true"
+    }
+ }

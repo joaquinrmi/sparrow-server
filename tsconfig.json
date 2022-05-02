@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "outDir": "dist",
+      "typeRoots": [
+        "./src/@types",
+        "./node_modules/@types",
+      ] 
+    },
+    "exclude": [
+      "node_modules",
+      "dist"
+    ]
+}
