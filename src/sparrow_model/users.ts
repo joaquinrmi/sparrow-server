@@ -8,6 +8,7 @@ interface UsersDocument extends BasicDocument
     handle: string;
     email: string;
     password: string;
+    profile_id: number;
 }
 
 const usersSchema = new Schema<UsersDocument>("users",
@@ -29,6 +30,15 @@ const usersSchema = new Schema<UsersDocument>("users",
     password: {
         type: "text",
         notNull: true
+    },
+    profile_id: {
+        type: "int",
+        unique: true,
+        notNull: true,
+        references: {
+            column: "id",
+            table: "profiles"
+        }
     }
 });
 
