@@ -9,7 +9,7 @@ import { QuerySelectorList, QuerySymbol } from "./query_selector";
 class BasicModel<DocumentType extends BasicDocument>
 {
     private schema: Schema<DocumentType>;
-    private columnList: Array<string>;
+    private columnList: Array<keyof DocumentAttributes<DocumentType>>;
     private pool: Pool;
 
     constructor(schema: Schema<DocumentType>)
@@ -34,6 +34,11 @@ class BasicModel<DocumentType extends BasicDocument>
         }
     }
 
+    getTableName(): string
+    {
+        return this.schema.getTableName();
+    }
+
     async exists(conditions: SearchQuery<DocumentType>): Promise<boolean>
     {
         return false;
@@ -51,9 +56,11 @@ class BasicModel<DocumentType extends BasicDocument>
             selectedColumns = this.columnList.join(", ");
         }
 
-        let [ conditionsStr, values ] = this.parseConditions(conditions);
+        let values = [];
+        let conditionsStr = this.parseWhere(conditions, values);
+        let extraConditionsStr = this.parseExtraConditions(conditions);
 
-        let query = `SELECT ${selectedColumns} FROM ${this.schema.getTableName()} ${conditionsStr};`;
+        let query = `SELECT ${selectedColumns} FROM ${this.schema.getTableName()} ${conditionsStr} ${extraConditionsStr};`;
 
         try
         {
@@ -82,7 +89,7 @@ class BasicModel<DocumentType extends BasicDocument>
         {
             if(data[column])
             {
-                document[column] = data[column];
+                document[column as string] = data[column];
             }
         }
 
@@ -94,38 +101,9 @@ class BasicModel<DocumentType extends BasicDocument>
         return document as DocumentType;
     }
 
-    private parseConditions(conditions: SearchQuery<DocumentType>): [ string, Array<any> ]
+    private parseWhere<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>, values: Array<any>): string
     {
-        let query = "";
-        let values = [];
-
-        let orderBy = "";
-        if(Array.isArray(conditions.orderBy))
-        {
-            let orders = conditions.orderBy.map((value) => this.parseOrderBy(value));
-            if(orders.length > 0)
-            {
-                orderBy = `ORDER BY ${orders.join(", ")}`;
-            }
-        }
-        else if(conditions.orderBy)
-        {
-            orderBy = `ORDER BY ${this.parseOrderBy(conditions.orderBy)}`;
-        }
-
-        let limit = "";
-        if(conditions.limit)
-        {
-            limit = `LIMIT ${conditions.limit}`;
-        }
-
-        let offset = "";
-        if(conditions.offset)
-        {
-            offset = `OFFSET ${conditions.offset}`;
-        }
-
-        let valueId = 1;
+        let valueId = values.length + 1;
 
         let where = "";
         if(conditions.props)
@@ -156,12 +134,57 @@ class BasicModel<DocumentType extends BasicDocument>
             }
         }
 
-        query = `${where} ${orderBy} ${limit} ${offset}`;
-
-        return [ query, values ];
+        return `${where}`;
     }
 
-    private parseOrderBy(orderBy: SearchOrder<DocumentType>): string
+    private parseExtraConditions<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>): string
+    {
+        const extraConditions = this.extractExtraConditions(conditions);
+
+        let orderBy = "";
+        if(extraConditions.orderBy.length > 0)
+        {
+            orderBy = `ORDER BY ${extraConditions.orderBy.join(", ")}`;
+        }
+
+        return `${orderBy} ${extraConditions.offset} ${extraConditions.limit}`;
+    }
+
+    private extractExtraConditions<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>): { orderBy: string[], limit: string,  offset: string }
+    {
+        let limit = "";
+        if(conditions.limit)
+        {
+            limit = `LIMIT ${conditions.limit}`;
+        }
+
+        let offset = "";
+        if(conditions.offset)
+        {
+            offset = `OFFSET ${conditions.offset}`;
+        }
+
+        if(Array.isArray(conditions.orderBy))
+        {
+            let orders = conditions.orderBy.map((value) => this.parseOrderBy(value));
+            if(orders.length > 0)
+            {
+                return { orderBy: orders, limit, offset };
+            }
+        }
+        else if(conditions.orderBy)
+        {
+            return {
+                orderBy: [ this.parseOrderBy(conditions.orderBy) ],
+                limit,
+                offset
+            }
+        }
+
+        return { orderBy: [], limit, offset };
+    }
+
+    private parseOrderBy<SearchDocumentType extends BasicDocument>(orderBy: SearchOrder<SearchDocumentType>): string
     {
         return `${orderBy.columnName} ${orderBy.order ? orderBy.order : "desc"}`;
     }
