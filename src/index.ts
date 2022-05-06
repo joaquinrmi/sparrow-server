@@ -1,4 +1,4 @@
-import * as dotenv from "dotenv";
-dotenv.config();
+import Sparrow from "./sparrow";
 
-console.log("Hola mundo");
+let application = new Sparrow();
+application.start();
