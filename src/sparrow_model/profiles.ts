@@ -46,8 +46,7 @@ const profilesSchema = new Schema<ProfilesDocument>("profiles",
         type: "text"
     },
     website: {
-        type: "text",
-        notNull: true
+        type: "text"
     },
     following: {
         type: "int",
