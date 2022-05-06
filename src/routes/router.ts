@@ -1,5 +1,5 @@
-import * as express from "express";
-import { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
+import ErrorResponse from "./error_response";
 import RouteMap from "./route_map";
 
 export type Middleware = (req: Request, res: Response, next: NextFunction) => any;
@@ -57,6 +57,11 @@ class Router
         {
             this.router.use(routes[i], middleware.bind(this));
         }
+    }
+
+    protected error(res: Response, error: ErrorResponse): any
+    {
+        return res.status(error.status).json(error);
     }
 }
 
