@@ -17,6 +17,7 @@ class BasicModel<DocumentType extends BasicDocument>
     {
         this.schema = schema;
         this.pool = pool;
+        this.columnList = [];
 
         for(let column in this.schema.getDocumentDefinition())
         {
