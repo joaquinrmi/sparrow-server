@@ -1,8 +1,9 @@
+import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 
-interface FollowsDocument extends BasicDocument
+export interface FollowsDocument extends BasicDocument
 {
     id: number;
     user_id: number;
@@ -35,10 +36,10 @@ const followsSchema = new Schema<FollowsDocument>("follows",
 
 class FollowsModel extends BasicModel<FollowsDocument>
 {
-    constructor(schema: Schema<FollowsDocument>)
+    constructor(pool: Pool)
     {
-        super(schema);
+        super(followsSchema, pool);
     }
 }
 
-export default new FollowsModel(followsSchema);
+export default FollowsModel;

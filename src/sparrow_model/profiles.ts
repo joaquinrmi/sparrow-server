@@ -1,8 +1,9 @@
+import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 
-interface ProfilesDocument extends BasicDocument
+export interface ProfilesDocument extends BasicDocument
 {
     id: number;
     name: string;
@@ -65,12 +66,12 @@ const profilesSchema = new Schema<ProfilesDocument>("profiles",
     }
 });
 
-export class ProfilesModel extends BasicModel<ProfilesDocument>
+class ProfilesModel extends BasicModel<ProfilesDocument>
 {
-    constructor(schema: Schema<ProfilesDocument>)
+    constructor(pool: Pool)
     {
-        super(schema);
+        super(profilesSchema, pool);
     }
 }
 
-export default new ProfilesModel(profilesSchema);
+export default ProfilesModel;

@@ -1,10 +1,9 @@
+import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
-import cheepsModel from "./cheeps";
-import usersModel from "./users";
 
-interface LikesDocument extends BasicDocument
+export interface LikesDocument extends BasicDocument
 {
     id: number;
     cheep_id: number;
@@ -22,7 +21,7 @@ const likesSchema = new Schema<LikesDocument>("likes",
         notNull: true,
         references: {
             column: "id",
-            table: cheepsModel.getTableName()
+            table: "cheeps"
         }
     },
     user_id: {
@@ -30,17 +29,17 @@ const likesSchema = new Schema<LikesDocument>("likes",
         notNull: true,
         references: {
             column: "id",
-            table: usersModel.getTableName()
+            table: "users"
         }
     }
 });
 
 class LikesModel extends BasicModel<LikesDocument>
 {
-    constructor(schema: Schema<LikesDocument>)
+    constructor(pool: Pool)
     {
-        super(schema);
+        super(likesSchema, pool);
     }
 }
 
-export default new LikesModel(likesSchema);
+export default LikesModel;

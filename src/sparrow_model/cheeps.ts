@@ -1,8 +1,9 @@
+import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 
-interface CheepsDocument extends BasicDocument
+export interface CheepsDocument extends BasicDocument
 {
     id: number;
     author_id: number;
@@ -71,12 +72,12 @@ const cheepsSchema = new Schema<CheepsDocument>("cheeps",
     }
 });
 
-export class CheepsModel extends BasicModel<CheepsDocument>
+class CheepsModel extends BasicModel<CheepsDocument>
 {
-    constructor(schema: Schema<CheepsDocument>)
+    constructor(pool: Pool)
     {
-        super(schema);
+        super(cheepsSchema, pool);
     }
 }
 
-export default new CheepsModel(cheepsSchema);
+export default CheepsModel;
