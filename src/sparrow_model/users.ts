@@ -5,7 +5,7 @@ import Schema from "../model/schema/schema";
 
 export interface UsersDocument extends BasicDocument
 {
-    id: number;
+    id?: number;
     handle: string;
     email: string;
     password: string;
