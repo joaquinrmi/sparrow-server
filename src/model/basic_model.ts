@@ -13,9 +13,10 @@ class BasicModel<DocumentType extends BasicDocument>
     private columnList: Array<keyof DocumentAttributes<DocumentType>>;
     private pool: Pool;
 
-    constructor(schema: Schema<DocumentType>)
+    constructor(schema: Schema<DocumentType>, pool: Pool)
     {
         this.schema = schema;
+        this.pool = pool;
 
         for(let column in this.schema.getDocumentDefinition())
         {
@@ -319,6 +320,6 @@ type ExcludeBasicModel<DocumentType extends BasicDocument, ModelType extends Bas
 
 export type ModelMethods<DocumentType extends BasicDocument, ModelType extends BasicModel<DocumentType>> = {
     [Property in keyof ExcludeBasicModel<DocumentType, ModelType> as If<Property, IsFunction<ModelType[Property]>>]?: ModelType[Property];
- };
+};
 
 export default BasicModel;
