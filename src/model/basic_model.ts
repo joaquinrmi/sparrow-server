@@ -183,41 +183,57 @@ class BasicModel<DocumentType extends BasicDocument>
 
     private parseWhere<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>, values: Array<any>): string
     {
-        let where = this.parseConditions(conditions, values);
+        let whereList = this.parseConditions(conditions, values);
+        let where = [];
+
+        for(let i = 0; i < whereList.length; ++i)
+        {
+            where.push(`(${whereList[i].join(" AND ")})`);
+        }
 
         if(where.length > 0)
         {
-            return `WHERE ${where.join(" AND ")}`;
+            return `WHERE ${where.join(" OR ")}`;
         }
 
         return "";
     }
 
-    private parseConditions<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>, values: Array<any>): Array<string>
+    private parseConditions<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>, values: Array<any>): Array<string[]>
     {
         let valueId = values.length + 1;
 
-        let whereProps = new Array<string>();
-        if(conditions.props)
+        let whereProps = new Array<string[]>();
+
+        if(!conditions.props)
         {
-            for(let prop in conditions.props)
+            conditions.props = [];
+        }
+
+        for(let filter of conditions.props)
+        {
+            let whereList = new Array<string>();
+
+            for(let prop in filter)
             {
-                if(typeof conditions.props[prop] === "object" && !Array.isArray(conditions.props[prop]))
+                if(typeof filter[prop] === "object" && !Array.isArray(filter[prop]))
                 {
-                    let selectors = conditions.props[prop];
+                    let selectors = filter[prop];
 
                     for(let selector in selectors)
                     {
-                        whereProps.push(`${prop}${QuerySymbol[selector as QuerySelectorList]}${`$${valueId++}`}`);
+                        whereList.push(`${prop}${QuerySymbol[selector as QuerySelectorList]}${`$${valueId++}`}`);
                         values.push(selectors[selector]);
                     }
                 }
                 else
                 {
-                    whereProps.push(`${prop}=${`$${valueId++}`}`);
-                    values.push(conditions.props[prop]);
+                    whereList.push(`${prop}=${`$${valueId++}`}`);
+                    values.push(filter[prop]);
                 }
             }
+
+            whereProps.push(whereList);
         }
 
         return whereProps;
@@ -318,13 +334,33 @@ class BasicModel<DocumentType extends BasicDocument>
             }
         }
 
-        let allConditions = [
-            ...conditionsStr,
-            ...this.parseConditions(conditions.firstConditions, values),
-            ...this.parseConditions(conditions.secondConditions, values)
-        ];
+        let firstConditionsParsered = this.parseConditions(conditions.firstConditions, values);
+        let secondConditionsParsered = this.parseConditions(conditions.secondConditions, values);
 
-        return allConditions.join(" AND ");
+        let firstConditions = new Array<string>();
+        let secondConditions = new Array<string>();
+
+        for(let i = 0; i < firstConditionsParsered.length; ++i)
+        {
+            firstConditions.push(`(${firstConditionsParsered[i].join(" AND ")})`);
+        }
+
+        for(let i = 0; i < secondConditionsParsered.length; ++i)
+        {
+            secondConditions.push(`(${secondConditionsParsered[i].join(" AND ")})`);
+        }
+
+        let allConditions = `${conditionsStr.join(" AND ")}`;
+        if(firstConditions.length > 0)
+        {
+            allConditions += ` AND (${firstConditions.join("OR")})`;
+        }
+        if(secondConditions.length > 0)
+        {
+            allConditions += ` AND (${secondConditions.join("OR")})`;
+        }
+
+        return allConditions;
     }
 
     private parseOrderBy<SearchDocumentType extends BasicDocument>(orderBy: SearchOrder<SearchDocumentType>): string
