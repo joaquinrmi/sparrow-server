@@ -46,6 +46,31 @@ class BasicModel<DocumentType extends BasicDocument>
         return false;
     }
 
+    async create(document: DocumentAttributes<DocumentType>): Promise<DocumentType>
+    {
+        let columnNames = new Array<string>();
+        let values = new Array<any>();
+
+        for(let column in document)
+        {
+            columnNames.push(column);
+            values.push(document[column]);
+        }
+
+        let query = `INSERT INTO ${this.schema.getTableName()} (${columnNames.join(", ")}) VALUES (${values.map((v, i) => `$${i + 1}`).join(", ")}) RETURNING ${this.columnList.join(", ")}`;
+
+        try
+        {
+            var res = await this.pool.query(query, values);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return this.createDocument(res.rows[0]);
+    }
+
     async find(conditions: SearchQuery<DocumentType>, columns?: Array<keyof DocumentAttributes<DocumentType>>): Promise<Array<DocumentType>>
     {
         let selectedColumns: string;
