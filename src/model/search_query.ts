@@ -7,7 +7,7 @@ interface SearchQuery<DocumentType extends BasicDocument>
     orderBy?: SearchOrder<DocumentType> | SearchOrder<DocumentType>[];
     limit?: number;
     offset?: number;
-    props?: QueryFilter<DocumentType>;
+    props?: Array<QueryFilter<DocumentType>>;
 }
 
 export default SearchQuery;
