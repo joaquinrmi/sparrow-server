@@ -5,17 +5,17 @@ import Schema from "../model/schema/schema";
 
 export interface ProfilesDocument extends BasicDocument
 {
-    id: number;
+    id?: number;
     name: string;
     picture: string;
-    banner: string;
+    banner?: string;
     join_date: number;
-    birth_date: number;
-    location: string;
-    website: string;
-    following: number;
-    followers: number;
-    cheeps: number;
+    birth_date?: number;
+    location?: string;
+    website?: string;
+    following?: number;
+    followers?: number;
+    cheeps?: number;
 }
 
 const profilesSchema = new Schema<ProfilesDocument>("profiles",
