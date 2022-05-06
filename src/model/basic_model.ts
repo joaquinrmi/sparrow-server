@@ -5,6 +5,7 @@ import SearchQuery from "./search_query";
 import Schema from "./schema/schema";
 import SearchOrder from "./search_order";
 import { QuerySelectorList, QuerySymbol } from "./query_selector";
+import InnerJoinQuery from "./inner_join_query";
 
 class BasicModel<DocumentType extends BasicDocument>
 {
@@ -81,6 +82,59 @@ class BasicModel<DocumentType extends BasicDocument>
         return result;
     }
 
+    async innerJoin<FromDocumentType extends BasicDocument>(
+        conditions: InnerJoinQuery<DocumentType, FromDocumentType>,
+        columns: {
+            first?: Array<keyof DocumentAttributes<DocumentType>>,
+            second?: Array<keyof DocumentAttributes<FromDocumentType>>
+        },
+        secondModel: BasicModel<FromDocumentType>
+    ): Promise<Array<InnerJoin<DocumentType, FromDocumentType>>>
+    {
+        let columnArray: Array<string>;
+        if(columns.first)
+        {
+            (columnArray as Array<keyof DocumentAttributes<DocumentType>>) = columns.first;
+        }
+        else
+        {
+            (columnArray as Array<keyof DocumentAttributes<DocumentType>>) = this.columnList;
+        }
+
+        for(let i = 0; i < columnArray.length; ++i)
+        {
+            columnArray[i] = `${this.schema.getTableName()}.${columnArray[i]}`
+        }
+
+        const selectedColumns = columnArray.join(", ");
+
+        let values = [];
+        let conditionsStr = this.parseInnerJoinConditions(conditions, values, secondModel.getTableName());
+        let extraConditionsStr = this.parseInnerJoinExtraConditions(conditions, secondModel.getTableName());
+
+        let query = `SELECT ${selectedColumns} FROM ${secondModel.getTableName()} INNER JOIN ${this.schema.getTableName()} ON ${conditionsStr} ${extraConditionsStr};`;
+
+        try
+        {
+            var response = await this.pool.query(query, values);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let result = new Array<InnerJoin<DocumentType, FromDocumentType>>();
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            result.push({
+                firstDocuments: this.createDocument(response.rows[i])
+            });
+        }
+
+        return result;
+    }
+
     private createDocument(data: any): DocumentType
     {
         let document: BasicDocument = {};
@@ -103,12 +157,23 @@ class BasicModel<DocumentType extends BasicDocument>
 
     private parseWhere<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>, values: Array<any>): string
     {
+        let where = this.parseConditions(conditions, values);
+
+        if(where.length > 0)
+        {
+            return `WHERE ${where.join(" AND ")}`;
+        }
+
+        return "";
+    }
+
+    private parseConditions<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>, values: Array<any>): Array<string>
+    {
         let valueId = values.length + 1;
 
-        let where = "";
+        let whereProps = new Array<string>();
         if(conditions.props)
         {
-            let whereProps = new Array<string>();
             for(let prop in conditions.props)
             {
                 if(typeof conditions.props[prop] === "object" && !Array.isArray(conditions.props[prop]))
@@ -127,14 +192,9 @@ class BasicModel<DocumentType extends BasicDocument>
                     values.push(conditions.props[prop]);
                 }
             }
-
-            if(whereProps.length > 0)
-            {
-                where = `WHERE ${whereProps.join(" AND ")}`;
-            }
         }
 
-        return `${where}`;
+        return whereProps;
     }
 
     private parseExtraConditions<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>): string
@@ -148,6 +208,25 @@ class BasicModel<DocumentType extends BasicDocument>
         }
 
         return `${orderBy} ${extraConditions.offset} ${extraConditions.limit}`;
+    }
+
+    private parseInnerJoinExtraConditions<SecondDocumentType>(conditions: InnerJoinQuery<DocumentType, SecondDocumentType>, secondTableName: string): string
+    {
+        const firstExtraConditions = this.extractExtraConditions(conditions.firstConditions);
+        const secondExtraConditions = this.extractExtraConditions(conditions.secondConditions);
+
+        let orderBy = "";
+        if(firstExtraConditions.orderBy.length > 0 || secondExtraConditions.orderBy.length > 0)
+        {
+            let allOrderBy = [
+                ...firstExtraConditions.orderBy.map(col => `${this.schema.getTableName()}.${col}`),
+                ...secondExtraConditions.orderBy.map(col => `${secondTableName}.${col}`)
+            ];
+
+            orderBy = `ORDER BY ${allOrderBy.join(", ")}`;
+        }
+
+        return `${orderBy} ${firstExtraConditions.offset} ${firstExtraConditions.limit}`;
     }
 
     private extractExtraConditions<SearchDocumentType extends BasicDocument>(conditions: SearchQuery<SearchDocumentType>): { orderBy: string[], limit: string,  offset: string }
@@ -184,10 +263,54 @@ class BasicModel<DocumentType extends BasicDocument>
         return { orderBy: [], limit, offset };
     }
 
+    private parseInnerJoinConditions<SecondDocumentType>(conditions: InnerJoinQuery<DocumentType, SecondDocumentType>, values: Array<any>, secondTableName: string): string
+    {
+        let conditionsStr = new Array<string>();
+
+        for(let column in conditions.joinConditions)
+        {
+            if(typeof conditions.joinConditions[column] === "object" && !Array.isArray(conditions.joinConditions[column]))
+            {
+                let selectors = conditions.joinConditions[column];
+
+                for(let selector in selectors)
+                {
+                    conditionsStr.push(`
+                        ${this.schema.getTableName()}.${column}
+                        ${QuerySymbol[selector as QuerySelectorList]}
+                        ${secondTableName}.${selectors[selector]}
+                    `);
+                }
+            }
+            else
+            {
+                conditionsStr.push(`
+                    ${this.schema.getTableName()}.${column}
+                    =
+                    ${secondTableName}.${conditions.joinConditions[column]}
+                `);
+            }
+        }
+
+        let allConditions = [
+            ...conditionsStr,
+            ...this.parseConditions(conditions.firstConditions, values),
+            ...this.parseConditions(conditions.secondConditions, values)
+        ];
+
+        return allConditions.join(" AND ");
+    }
+
     private parseOrderBy<SearchDocumentType extends BasicDocument>(orderBy: SearchOrder<SearchDocumentType>): string
     {
         return `${orderBy.columnName} ${orderBy.order ? orderBy.order : "desc"}`;
     }
+}
+
+export interface InnerJoin<FirstDocumentType extends BasicDocument, SecondDocumentType extends BasicDocument>
+{
+    firstDocuments?: FirstDocumentType;
+    secondDocuments?: SecondDocumentType;
 }
 
 type ExcludeBasicModel<DocumentType extends BasicDocument, ModelType extends BasicModel<DocumentType>> = {
