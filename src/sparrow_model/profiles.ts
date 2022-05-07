@@ -36,11 +36,11 @@ const profilesSchema = new Schema<ProfilesDocument>("profiles",
         type: "text"
     },
     join_date: {
-        type: "int",
+        type: "bigint",
         notNull: true
     },
     birth_date: {
-        type: "int"
+        type: "bigint"
     },
     location: {
         type: "text"
