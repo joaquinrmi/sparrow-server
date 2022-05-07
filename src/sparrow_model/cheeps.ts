@@ -5,16 +5,16 @@ import Schema from "../model/schema/schema";
 
 export interface CheepsDocument extends BasicDocument
 {
-    id: number;
+    id?: number;
     author_id: number;
     date_created: number;
-    response_target: number;
-    quote_target: number;
-    content: string;
-    gallery: Array<string>;
-    comments: number;
-    recheeps: number;
-    likes: number;
+    response_target?: number;
+    quote_target?: number;
+    content?: string;
+    gallery?: Array<string>;
+    comments?: number;
+    recheeps?: number;
+    likes?: number;
 }
 
 const cheepsSchema = new Schema<CheepsDocument>("cheeps",
