@@ -1,16 +1,15 @@
 import { v2 as cloudinary } from "cloudinary";
 import sharp from "sharp";
 import streamifier from "streamifier";
-import { UsersDocument } from "./sparrow_model/users";
 import randomWord from "./random_word";
 
 class ImageKeeper
 {
     private imageFolder: string;
 
-    constructor(user: UsersDocument)
+    constructor(userId: number)
     {
-        this.imageFolder = `uploads/${user.id}`;
+        this.imageFolder = `uploads/${userId}`;
     }
 
     async saveImage(img: any): Promise<string>
