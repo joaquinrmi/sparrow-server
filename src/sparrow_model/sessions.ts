@@ -2,6 +2,8 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import randomWord from "../random_word";
+import { encrypt } from "../encryption";
 
 export interface SessionsDocument extends BasicDocument
 {
@@ -40,6 +42,26 @@ class SessionsModel extends BasicModel<SessionsDocument>
     constructor(pool: Pool)
     {
         super(sessionsSchema, pool);
+    }
+
+    async registerNewSession(userId: number): Promise<string>
+    {
+        const key = randomWord(16);
+
+        try
+        {
+            await this.create({
+                user_id: userId,
+                key: encrypt(key),
+                date: new Date().getTime()
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return key;
     }
 }
 
