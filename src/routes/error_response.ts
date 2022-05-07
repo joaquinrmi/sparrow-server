@@ -63,4 +63,12 @@ export class InvalidCredentialsResponse extends ErrorResponse
     }
 }
 
+export class SessionDoesNotExistResponse extends ErrorResponse
+{
+    constructor()
+    {
+        super(StatusCode.Unauthorized, [ ErrorType.SessionDoesNotExist ]);
+    }
+}
+
 export default ErrorResponse;
