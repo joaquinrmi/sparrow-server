@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import UsersModel, { UsersDocument } from "./users";
 
 export interface CheepsDocument extends BasicDocument
 {
@@ -77,6 +78,47 @@ class CheepsModel extends BasicModel<CheepsDocument>
     constructor(pool: Pool)
     {
         super(cheepsSchema, pool);
+    }
+
+    async getCheep(userHandle: string, cheepId: number, usersModel: UsersModel): Promise<CheepsDocument>
+    {
+        try
+        {
+            var documents = await this.innerJoin<UsersDocument>(
+                {
+                    firstConditions: {
+                        props: [
+                            {
+                                id: cheepId
+                            }
+                        ]
+                    },
+                    secondConditions: {
+                        props: [
+                            {
+                                handle: userHandle
+                            }
+                        ]
+                    },
+                    joinConditions: {
+                        author_id: "id"
+                    }
+                },
+                {},
+                usersModel
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(documents.length === 0)
+        {
+            return null;
+        }
+
+        return documents[0].firstDocuments;
     }
 }
 
