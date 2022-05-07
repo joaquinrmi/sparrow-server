@@ -171,7 +171,7 @@ class UsersRouter extends Router
         req.session["userId"] = undefined;
         req.session.save();
 
-        res.status(StatusCode.OK);
+        res.status(StatusCode.OK).json({});
     }
 
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
