@@ -21,7 +21,7 @@ class UploadRouter extends Router
         this.useMiddleware(checkSession, [ "/image" ]);
     }
 
-    async uploadImage(req: Request, res: Response): Promise<any>
+    private async uploadImage(req: Request, res: Response): Promise<any>
     {
         const imageKeeper = new ImageKeeper(req.session["userId"]);
         try
