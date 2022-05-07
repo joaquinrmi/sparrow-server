@@ -183,7 +183,7 @@ class BasicModel<DocumentType extends BasicDocument>
 
         for(let column of this.columnList)
         {
-            if(data[column])
+            if(data[column] !== undefined)
             {
                 document[column as string] = data[column];
             }
