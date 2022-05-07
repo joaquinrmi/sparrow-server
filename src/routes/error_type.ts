@@ -5,7 +5,8 @@ enum ErrorType
     InvalidForm = "Invalid Form",
     HandleAlreadyExists = "Username Already Exists",
     EmailAlreadyExists = "Email Already Exists",
-    ProfileNotFound = "Profile Not Found"
+    ProfileNotFound = "Profile Not Found",
+    IncorrectUsernameOrPassword = "Incorrect Username Or Password"
 }
 
 export default ErrorType;
