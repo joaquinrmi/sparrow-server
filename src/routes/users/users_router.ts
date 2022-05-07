@@ -5,6 +5,7 @@ import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
 import { encrypt } from "../../encryption";
+import checkSession from "../check_session";
 
 class UsersRouter extends Router
 {
@@ -13,15 +14,18 @@ class UsersRouter extends Router
         super([
             new RouteMap(MethodType.Post, "/create", "createNewUser"),
             new RouteMap(MethodType.Post, "/login", "login"),
-            new RouteMap(MethodType.Post, "/logout", "logout")
+            new RouteMap(MethodType.Post, "/logout", "logout"),
+            new RouteMap(MethodType.Get, "/user-info", "getUserInformation")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
         this.registerFunction("login", this.login);
         this.registerFunction("logout", this.logout);
+        this.registerFunction("getUserInformation", this.getUserInformation);
 
         this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
+        this.useMiddleware(checkSession, [ "/user-info" ]);
     }
 
     private async createNewUser(req: Request, res: Response): Promise<any>
@@ -146,8 +150,33 @@ class UsersRouter extends Router
         req.session["userId"] = userDocument.id;
         req.session.save();
 
+        try
+        {
+            var profileDocuments = await req.model.profilesModel.find({
+                props: [
+                    {
+                        id: userDocument.id
+                    }
+                ]
+            }, [ "name", "picture" ]);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(profileDocuments.length === 0)
+        {
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        const profile = profileDocuments[0];
+
         res.status(StatusCode.OK).json({
-            handle: userDocument.handle
+            handle: userDocument.handle,
+            name: profile.name,
+            picture: profile.picture
         });
     }
 
@@ -172,6 +201,61 @@ class UsersRouter extends Router
         req.session.save();
 
         res.status(StatusCode.OK).json({});
+    }
+
+    private async getUserInformation(req: Request, res: Response): Promise<any>
+    {
+        try
+        {
+            var userDocuments = await req.model.usersModel.find({
+                props: [
+                    {
+                        id: req.session["userId"]
+                    }
+                ]
+            }, [ "id", "handle", "profile_id" ]);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(userDocuments.length === 0)
+        {
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        const user = userDocuments[0];
+
+        try
+        {
+            var profileDocuments = await req.model.profilesModel.find({
+                props: [
+                    {
+                        id: user.profile_id
+                    }
+                ]
+            }, [ "name", "picture" ]);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(profileDocuments.length === 0)
+        {
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        const profile = profileDocuments[0];
+
+        res.status(StatusCode.OK).json({
+            handle: user.handle,
+            name: profile.name,
+            picture: profile.picture
+        });
     }
 
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
