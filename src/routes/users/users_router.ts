@@ -12,11 +12,13 @@ class UsersRouter extends Router
     {
         super([
             new RouteMap(MethodType.Post, "/create", "createNewUser"),
-            new RouteMap(MethodType.Post, "/login", "login")
+            new RouteMap(MethodType.Post, "/login", "login"),
+            new RouteMap(MethodType.Post, "/logout", "logout")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
         this.registerFunction("login", this.login);
+        this.registerFunction("logout", this.logout);
 
         this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
@@ -147,6 +149,27 @@ class UsersRouter extends Router
         res.status(StatusCode.OK).json({
             handle: userDocument.handle
         });
+    }
+
+    private async logout(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.cookies["session"] === "object")
+        {
+            try
+            {
+                await req.model.sessionsModel.unregisterSession(req.cookies["session"].userId, req.cookies["session"].key);
+            }
+            catch(err)
+            {
+                console.log(err);
+                return this.error(res, new InternalServerErrorResponse());
+            }
+
+            res.cookie("session", JSON.stringify(null));
+        }
+
+        req.session["userId"] = undefined;
+        req.session.save();
     }
 
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
