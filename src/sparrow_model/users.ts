@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { encrypt } from "../encryption";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
@@ -48,6 +49,40 @@ class UsersModel extends BasicModel<UsersDocument>
     constructor(pool: Pool)
     {
         super(usersSchema, pool);
+    }
+
+    async validate(handleOrEmail: string, password: string): Promise<UsersDocument>
+    {
+        let encryptedPassword = encrypt(password);
+
+        try
+        {
+            var res = await this.find({
+                props: [
+                    {
+                        handle: handleOrEmail,
+                        password: encryptedPassword
+                    },
+                    {
+                        email: handleOrEmail,
+                        password: encryptedPassword
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(res.length > 0)
+        {
+            return res[0];
+        }
+        else
+        {
+            return null;
+        }
     }
 }
 
