@@ -21,7 +21,7 @@ export interface ProfilesDocument extends BasicDocument
 const profilesSchema = new Schema<ProfilesDocument>("profiles",
 {
     id: {
-        type: "int",
+        type: "serial",
         primaryKey: true
     },
     name: {
