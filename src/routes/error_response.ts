@@ -47,4 +47,12 @@ export class UserAlreadyExistsResponse extends ErrorResponse
     }
 }
 
+export class ProfileNotFoundResponse extends ErrorResponse
+{
+    constructor(handle: string)
+    {
+        super(StatusCode.NotFound, [ ErrorType.ProfileNotFound ], `El usuario @${handle} no existe.`);
+    }
+}
+
 export default ErrorResponse;
