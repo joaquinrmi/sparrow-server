@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { If, IsFunction } from "../conditional";
-import BasicDocument, { DocumentAttributes } from "./basic_document";
+import BasicDocument, { DocumentAttributes, UpdateDocument } from "./basic_document";
 import SearchQuery from "./search_query";
 import Schema from "./schema/schema";
 import SearchOrder from "./search_order";
@@ -98,6 +98,38 @@ class BasicModel<DocumentType extends BasicDocument>
         try
         {
             await this.pool.query(query, values);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
+    async update(conditions: SearchQuery<DocumentType>, values: UpdateDocument<DocumentType>): Promise<void>
+    {
+        let queryValues = [];
+        let conditionsStr = this.parseWhere(conditions, queryValues);
+        let extraConditionsStr = this.parseExtraConditions(conditions);
+
+        let columns = new Array<string>();
+        for(let column in values)
+        {
+            if(typeof values[column] === "object" && !Array.isArray(values[column]))
+            {
+                columns.push(`${column} = ${(values[column] as { expression: string; }).expression}`)
+            }
+            else
+            {
+                columns.push(`${column} = ${queryValues.length + 1}`);
+                queryValues.push(values[column]);
+            }
+        }
+
+        let query = `UPDATE ${this.schema.getTableName()} SET ${columns.join(", ")} ${conditionsStr} ${extraConditionsStr}`;
+
+        try
+        {
+            await this.pool.query(query, queryValues);
         }
         catch(err)
         {
