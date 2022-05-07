@@ -120,6 +120,29 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         return documents[0].firstDocuments;
     }
+
+    async registerNewComment(cheepId: number): Promise<void>
+    {
+        try
+        {
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: cheepId
+                        }
+                    ]
+                },
+                {
+                    comments: { expression: "comments + 1" }
+                }
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
 }
 
 export default CheepsModel;
