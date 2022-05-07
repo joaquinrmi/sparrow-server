@@ -48,6 +48,13 @@ class Sparrow
             saveUninitialized: false
         }));
 
+        this.app.use((req, res, next) =>
+        {
+            req.model = this.model;
+
+            next();
+        });
+
         this.app.use(express.static(path.join(__dirname, "..", "res")));
 
         this.app.use("/api/user", this.usersRouter.use());
