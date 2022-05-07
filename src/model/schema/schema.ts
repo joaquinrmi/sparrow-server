@@ -68,14 +68,14 @@ class Schema<DocumentType extends BasicDocument>
         let notNull = this.checkOption("NOT NULL", column.notNull);
 
         let def = "";
-        if(column.default)
+        if(column.default !== undefined)
         {
             def = `DEFAULT $${parameterCount.current++}`;
             this.creationParameters.push(column.default);
         }
 
         let references = "";
-        if(column.references)
+        if(column.references !== undefined)
         {
             references = `REFERENCES ${column.references.table}(${column.references.column})`;
         }
