@@ -4,6 +4,7 @@ import UsersModel from "./users";
 import CheepsModel from "./cheeps";
 import FollowsModel from "./follows";
 import LikesModel from "./likes";
+import SessionsModel from "./sessions";
 
 class SparrowModel
 {
@@ -12,6 +13,7 @@ class SparrowModel
     cheepsModel: CheepsModel;
     followsModel: FollowsModel;
     likesModel: LikesModel;
+    sessionsModel: SessionsModel;
     
     private pool: Pool;
 
@@ -24,6 +26,7 @@ class SparrowModel
         this.cheepsModel = new CheepsModel(this.pool);
         this.followsModel = new FollowsModel(this.pool);
         this.likesModel = new LikesModel(this.pool);
+        this.sessionsModel = new SessionsModel(this.pool);
     }
 
     async initialize()
@@ -35,6 +38,7 @@ class SparrowModel
             await this.cheepsModel.initialize();
             await this.followsModel.initialize();
             await this.likesModel.initialize();
+            await this.sessionsModel.initialize();
         }
         catch(err)
         {
