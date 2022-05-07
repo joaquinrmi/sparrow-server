@@ -44,7 +44,22 @@ class BasicModel<DocumentType extends BasicDocument>
 
     async exists(conditions: SearchQuery<DocumentType>): Promise<boolean>
     {
-        return false;
+        let values = [];
+        let conditionsStr = this.parseWhere(conditions, values);
+        let extraConditionsStr = this.parseExtraConditions(conditions);
+
+        let query = `SELECT 1 FROM ${this.schema.getTableName()} ${conditionsStr} ${extraConditionsStr}`;
+
+        try
+        {
+            var res = await this.pool.query(query, values);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return res.rowCount > 0;
     }
 
     async create(document: DocumentAttributes<DocumentType>): Promise<DocumentType>
