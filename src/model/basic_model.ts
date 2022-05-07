@@ -29,7 +29,7 @@ class BasicModel<DocumentType extends BasicDocument>
     {
         try
         {
-            await this.pool.query(this.schema.getCreationInstructions(), this.schema.getCreationParameters());
+            await this.pool.query(this.schema.getCreationInstructions());
         }
         catch(err)
         {
