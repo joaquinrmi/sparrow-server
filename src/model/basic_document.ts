@@ -15,4 +15,8 @@ export type DocumentMethods<DocumentType extends BasicDocument> = {
     [Property in keyof ExcludeBasicDocument<DocumentType> as If<Property, IsFunction<DocumentType[Property]>>]?: DocumentType[Property];
 };
 
+export type UpdateDocument<DocumentType extends BasicDocument> = {
+    [Property in keyof ExcludeBasicDocument<DocumentType> as If<Property, Not<IsFunction<DocumentType[Property]>>>]?: { expression: string; } | DocumentType[Property];
+};
+
 export default BasicDocument;
