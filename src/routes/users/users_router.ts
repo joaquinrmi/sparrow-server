@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { InternalServerErrorResponse, InvalidFormResponse, UserAlreadyExistsResponse } from "../error_response";
+import { InternalServerErrorResponse, InvalidCredentialsResponse, InvalidFormResponse, UserAlreadyExistsResponse } from "../error_response";
 import ErrorType from "../error_type";
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
@@ -11,12 +11,15 @@ class UsersRouter extends Router
     constructor()
     {
         super([
-            new RouteMap(MethodType.Post, "/create", "createNewUser")
+            new RouteMap(MethodType.Post, "/create", "createNewUser"),
+            new RouteMap(MethodType.Post, "/login", "login")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
+        this.registerFunction("login", this.login);
 
         this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
+        this.useMiddleware(this.checkLoginForm, [ "/login" ]);
     }
 
     private async createNewUser(req: Request, res: Response): Promise<any>
@@ -97,6 +100,55 @@ class UsersRouter extends Router
         });
     }
 
+    private async login(req: Request, res: Response): Promise<any>
+    {
+        try
+        {
+            var userDocument = await req.model.usersModel.validate(req.loginForm.handleOrEmail, req.loginForm.password);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(userDocument === null)
+        {
+            return this.error(res, new InvalidCredentialsResponse());
+        }
+
+        if(req.loginForm.remember)
+        {
+            try
+            {
+                var sessionKey = await req.model.sessionsModel.registerNewSession(userDocument.id);
+            }
+            catch(err)
+            {
+                console.log(err);
+                return this.error(res, new InternalServerErrorResponse());
+            }
+
+            res.cookie(
+                "session",
+                JSON.stringify({
+                    id: userDocument.id,
+                    key: sessionKey
+                }),
+                {
+                    maxAge: 30 * 24 * 60 * 60 * 1000
+                }
+            );
+        }
+
+        req.session["userId"] = userDocument.id;
+        req.session.save();
+
+        res.status(StatusCode.OK).json({
+            handle: userDocument.handle
+        });
+    }
+
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
     {
         if(!req.body)
@@ -135,6 +187,37 @@ class UsersRouter extends Router
             password: req.body.password,
             fullName: req.body.fullName,
             birthdate: req.body.birthdate
+        };
+
+        next();
+    }
+
+    private async checkLoginForm(req: Request, res: Response, next: NextFunction): Promise<any>
+    {
+        if(req.body === undefined)
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        if(typeof req.body.handleOrEmail !== "string")
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        if(typeof req.body.password !== "string")
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        if(typeof req.body.remember !== "boolean")
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        req.loginForm = {
+            handleOrEmail: req.body.handleOrEmail,
+            password: req.body.password,
+            remember: req.body.remember
         };
 
         next();
