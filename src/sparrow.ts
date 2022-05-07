@@ -8,6 +8,7 @@ import SparrowModel from "./sparrow_model/";
 
 import UsersRouter from "./routes/users/";
 import ProfilesRouter from "./routes/profiles/";
+import UploadRouter from "./routes/upload/";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ class Sparrow
 
     private usersRouter: UsersRouter;
     private profilesRouter: ProfilesRouter;
+    private uploadRouter: UploadRouter;
 
     constructor()
     {
@@ -30,6 +32,7 @@ class Sparrow
 
         this.usersRouter = new UsersRouter();
         this.profilesRouter = new ProfilesRouter();
+        this.uploadRouter = new UploadRouter(this.upload);
     }
 
     async start()
@@ -63,6 +66,7 @@ class Sparrow
 
         this.app.use("/api/user", this.usersRouter.use());
         this.app.use("/api/profile", this.profilesRouter.use());
+        this.app.use("/api/upload", this.uploadRouter.use());
 
         this.app.get("*", (req : Request, res : Response) => {
             res.sendFile(path.join(__dirname, "..", "res", "index.html"));
