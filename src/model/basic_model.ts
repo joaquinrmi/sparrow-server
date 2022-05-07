@@ -358,11 +358,13 @@ class BasicModel<DocumentType extends BasicDocument>
 
         for(let i = 0; i < firstConditionsParsered.length; ++i)
         {
+            firstConditionsParsered[i] = firstConditionsParsered[i].map(v => `${this.schema.getTableName()}.${v}`);
             firstConditions.push(`(${firstConditionsParsered[i].join(" AND ")})`);
         }
 
         for(let i = 0; i < secondConditionsParsered.length; ++i)
         {
+            secondConditionsParsered[i] = secondConditionsParsered[i].map(v => `${secondTableName}.${v}`);
             secondConditions.push(`(${secondConditionsParsered[i].join(" AND ")})`);
         }
 
