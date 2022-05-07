@@ -143,6 +143,29 @@ class CheepsModel extends BasicModel<CheepsDocument>
             throw err;
         }
     }
+
+    async registerNewRecheep(cheepId: number): Promise<void>
+    {
+        try
+        {
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: cheepId
+                        }
+                    ]
+                },
+                {
+                    recheeps: { expression: "recheeps + 1" }
+                }
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
 }
 
 export default CheepsModel;
