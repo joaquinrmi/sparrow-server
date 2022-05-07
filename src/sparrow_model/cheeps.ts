@@ -166,6 +166,29 @@ class CheepsModel extends BasicModel<CheepsDocument>
             throw err;
         }
     }
+
+    async registerNewLike(cheepId: number): Promise<void>
+    {
+        try
+        {
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: cheepId
+                        }
+                    ]
+                },
+                {
+                    likes: { expression: "likes + 1" }
+                }
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
 }
 
 export default CheepsModel;
