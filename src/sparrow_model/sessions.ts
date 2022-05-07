@@ -63,6 +63,25 @@ class SessionsModel extends BasicModel<SessionsDocument>
 
         return key;
     }
+
+    async unregisterSession(userId: number, key: string): Promise<void>
+    {
+        try
+        {
+            await this.delete({
+                props: [
+                    {
+                        user_id: userId,
+                        key: encrypt(key)
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
 }
 
 export default SessionsModel;
