@@ -32,7 +32,7 @@ const cheepsSchema = new Schema<CheepsDocument>("cheeps",
         }
     },
     date_created: {
-        type: "int",
+        type: "bigint",
         notNull: true
     },
     response_target: {
