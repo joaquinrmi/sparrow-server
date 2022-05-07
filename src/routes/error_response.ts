@@ -55,4 +55,12 @@ export class ProfileNotFoundResponse extends ErrorResponse
     }
 }
 
+export class InvalidCredentialsResponse extends ErrorResponse
+{
+    constructor()
+    {
+        super(StatusCode.Unauthorized, [ ErrorType.IncorrectUsernameOrPassword ]);
+    }
+}
+
 export default ErrorResponse;
