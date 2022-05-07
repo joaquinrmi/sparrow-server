@@ -13,14 +13,12 @@ class Schema<DocumentType extends BasicDocument>
 
     private documentDefinition: DocumentDefinition<DocumentType>;
     private tableName: string;
-    private creationParameters: Array<any>;
 
     constructor(tableName: string, documentDefinition: DocumentDefinition<DocumentType>)
     {
         this.methods = {};
         this.tableName = tableName;
         this.documentDefinition = documentDefinition;
-        this.creationParameters = [];
     }
 
     getDocumentDefinition(): DocumentDefinition<DocumentType>
@@ -53,11 +51,6 @@ class Schema<DocumentType extends BasicDocument>
         return instructions;
     }
 
-    getCreationParameters(): Array<any>
-    {
-        return this.creationParameters;
-    }
-
     private getColumnCreationInstructions(columnName: keyof DocumentAttributes<DocumentType>, parameterCount: ParameterCount): string
     {
         const column = this.documentDefinition[columnName];
@@ -70,8 +63,7 @@ class Schema<DocumentType extends BasicDocument>
         let def = "";
         if(column.default !== undefined)
         {
-            def = `DEFAULT $${parameterCount.current++}`;
-            this.creationParameters.push(column.default);
+            def = `DEFAULT ${this.parseParameter(column.default)}`;
         }
 
         let references = "";
@@ -81,6 +73,21 @@ class Schema<DocumentType extends BasicDocument>
         }
 
         return `${columnName} ${columnType} ${primaryKey} ${unique} ${notNull} ${def} ${references}`;
+    }
+
+    private parseParameter(parameter: any): string
+    {
+        switch(typeof parameter)
+        {
+        case "number":
+            return `${parameter}`;
+        
+        case "string":
+            return `'${parameter}'`;
+
+        case "object":
+            return `{${(parameter as any[]).map(e => this.parseParameter(e)).join(", ")}}`;
+        }
     }
 
     private getColumnType(columnType: ColumnDefinition["type"]): string
