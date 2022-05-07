@@ -140,7 +140,7 @@ class BasicModel<DocumentType extends BasicDocument>
         }
         else
         {
-            (columnArray as Array<keyof DocumentAttributes<DocumentType>>) = this.columnList;
+            (columnArray as Array<keyof DocumentAttributes<DocumentType>>) = [...this.columnList];
         }
 
         for(let i = 0; i < columnArray.length; ++i)
