@@ -73,7 +73,7 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         super(profilesSchema, pool);
     }
 
-    async registerNewCheep(userId: string, usersModel: UsersModel): Promise<void>
+    async registerNewCheep(userId: number, usersModel: UsersModel): Promise<void>
     {
         try
         {
