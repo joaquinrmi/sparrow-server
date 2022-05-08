@@ -3,6 +3,7 @@ import { encrypt } from "../encryption";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import ProfilesModel from "./profiles";
 
 export interface UsersDocument extends BasicDocument
 {
@@ -84,6 +85,66 @@ class UsersModel extends BasicModel<UsersDocument>
             return null;
         }
     }
+
+    async getShortInformation(id: number, profilesModel: ProfilesModel): Promise<UserShortInformation>
+    {
+        try
+        {
+            var userDocuments = await this.find({
+                props: [
+                    {
+                        id: id
+                    }
+                ]
+            }, [ "id", "handle", "profile_id" ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(userDocuments.length === 0)
+        {
+            return null;
+        }
+
+        const user = userDocuments[0];
+
+        try
+        {
+            var profileDocuments = await profilesModel.find({
+                props: [
+                    {
+                        id: user.profile_id
+                    }
+                ]
+            }, [ "name", "picture" ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(profileDocuments.length === 0)
+        {
+            return null;
+        }
+
+        const profile = profileDocuments[0];
+
+        return {
+            handle: user.handle,
+            name: profile.name,
+            picture: profile.picture
+        };
+    }
+}
+
+export interface UserShortInformation
+{
+    handle: string;
+    name: string;
+    picture: string;
 }
 
 export default UsersModel;
