@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import ProfilesModel from "./profiles";
 import UsersModel, { UsersDocument } from "./users";
 
 export interface CheepsDocument extends BasicDocument
@@ -78,6 +79,21 @@ class CheepsModel extends BasicModel<CheepsDocument>
     constructor(pool: Pool)
     {
         super(cheepsSchema, pool);
+    }
+
+    async cheep(data: CheepsDocument, usersModel: UsersModel, profilesModel: ProfilesModel): Promise<CheepsDocument>
+    {
+        try
+        {
+            var cheepDocument = await this.create(data);
+            await profilesModel.registerNewCheep(data.author_id, usersModel);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return cheepDocument;
     }
 
     async getCheep(userHandle: string, cheepId: number, usersModel: UsersModel): Promise<CheepsDocument>
