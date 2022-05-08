@@ -7,7 +7,8 @@ enum ErrorType
     EmailAlreadyExists = "Email Already Exists",
     ProfileNotFound = "Profile Not Found",
     IncorrectUsernameOrPassword = "Incorrect Username Or Password",
-    SessionDoesNotExist = "Session Does Not Exist"
+    SessionDoesNotExist = "Session Does Not Exist",
+    InvalidCheepContent = "Invalid Cheep Content"
 }
 
 export default ErrorType;
