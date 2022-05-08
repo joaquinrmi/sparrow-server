@@ -96,33 +96,17 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return cheepDocument;
     }
 
-    async getCheep(userHandle: string, cheepId: number, usersModel: UsersModel): Promise<CheepsDocument>
+    async getCheep(cheepId: number): Promise<CheepsDocument>
     {
         try
         {
-            var documents = await this.innerJoin<UsersDocument>(
-                {
-                    firstConditions: {
-                        props: [
-                            {
-                                id: cheepId
-                            }
-                        ]
-                    },
-                    secondConditions: {
-                        props: [
-                            {
-                                handle: userHandle
-                            }
-                        ]
-                    },
-                    joinConditions: {
-                        author_id: "id"
+            var documents = await this.find({
+                props: [
+                    {
+                        id: cheepId
                     }
-                },
-                {},
-                usersModel
-            );
+                ]
+            });
         }
         catch(err)
         {
@@ -134,7 +118,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
             return null;
         }
 
-        return documents[0].firstDocuments;
+        return documents[0];
     }
 
     async registerNewComment(cheepId: number): Promise<void>
