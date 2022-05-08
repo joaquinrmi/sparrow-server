@@ -73,11 +73,11 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         super(profilesSchema, pool);
     }
 
-    async registerNewCheep(handle: string, usersModel: UsersModel): Promise<void>
+    async registerNewCheep(userId: string, usersModel: UsersModel): Promise<void>
     {
         try
         {
-            await this.pool.query(`UPDATE ${this.getTableName()} SET cheeps = cheeps + 1 FROM ${this.getTableName()} a INNER JOIN ${usersModel.getTableName()} b ON b.handle = $1 AND a.id = b.profile_id`, [ handle ]);
+            await this.pool.query(`UPDATE ${this.getTableName()} SET cheeps = cheeps + 1 FROM ${this.getTableName()} a INNER JOIN ${usersModel.getTableName()} b ON b.id = $1 AND a.id = b.profile_id`, [ userId ]);
         }
         catch(err)
         {
