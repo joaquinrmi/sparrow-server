@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import UsersModel from "./users";
 
 export interface ProfilesDocument extends BasicDocument
 {
@@ -70,6 +71,18 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
     constructor(pool: Pool)
     {
         super(profilesSchema, pool);
+    }
+
+    async registerNewCheep(handle: string, usersModel: UsersModel): Promise<void>
+    {
+        try
+        {
+            await this.pool.query(`UPDATE ${this.getTableName()} SET cheeps = cheeps + 1 FROM ${this.getTableName()} a INNER JOIN ${usersModel.getTableName()} b ON b.handle = $1 AND a.id = b.profile_id`, [ handle ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
     }
 }
 
