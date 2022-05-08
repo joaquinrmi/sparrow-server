@@ -71,4 +71,12 @@ export class SessionDoesNotExistResponse extends ErrorResponse
     }
 }
 
+export class InvalidCheepContentResponse extends ErrorResponse
+{
+    constructor(message?: string)
+    {
+        super(StatusCode.BadRequest, [ ErrorType.InvalidCheepContent ], message);
+    }
+}
+
 export default ErrorResponse;
