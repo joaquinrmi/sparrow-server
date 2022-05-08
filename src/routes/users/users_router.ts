@@ -207,13 +207,7 @@ class UsersRouter extends Router
     {
         try
         {
-            var userDocuments = await req.model.usersModel.find({
-                props: [
-                    {
-                        id: req.session["userId"]
-                    }
-                ]
-            }, [ "id", "handle", "profile_id" ]);
+            var userShortInformation = await req.model.usersModel.getShortInformation(req.session["userId"], req.model.profilesModel);
         }
         catch(err)
         {
@@ -221,41 +215,7 @@ class UsersRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        if(userDocuments.length === 0)
-        {
-            return this.error(res, new InternalServerErrorResponse());
-        }
-
-        const user = userDocuments[0];
-
-        try
-        {
-            var profileDocuments = await req.model.profilesModel.find({
-                props: [
-                    {
-                        id: user.profile_id
-                    }
-                ]
-            }, [ "name", "picture" ]);
-        }
-        catch(err)
-        {
-            console.log(err);
-            return this.error(res, new InternalServerErrorResponse());
-        }
-
-        if(profileDocuments.length === 0)
-        {
-            return this.error(res, new InternalServerErrorResponse());
-        }
-
-        const profile = profileDocuments[0];
-
-        res.status(StatusCode.OK).json({
-            handle: user.handle,
-            name: profile.name,
-            picture: profile.picture
-        });
+        res.status(StatusCode.OK).json(userShortInformation);
     }
 
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
