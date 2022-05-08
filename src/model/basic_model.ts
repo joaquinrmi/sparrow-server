@@ -11,7 +11,7 @@ class BasicModel<DocumentType extends BasicDocument>
 {
     private schema: Schema<DocumentType>;
     private columnList: Array<keyof DocumentAttributes<DocumentType>>;
-    private pool: Pool;
+    protected pool: Pool;
 
     constructor(schema: Schema<DocumentType>, pool: Pool)
     {
