@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { CheepsDocument } from "../../sparrow_model/cheeps";
 import { UserShortInformation } from "../../sparrow_model/users";
 import checkSession from "../check_session";
-import { InternalServerErrorResponse, InvalidCheepContentResponse } from "../error_response";
+import { InternalServerErrorResponse, InvalidCheepContentResponse, InvalidFormResponse } from "../error_response";
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
@@ -18,6 +18,7 @@ class CheepsRouter extends Router
         this.registerFunction("createCheep", this.createCheep);
 
         this.useMiddleware(checkSession, [ "/create" ]);
+        this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
     private async createCheep(req: Request, res: Response): Promise<any>
@@ -59,6 +60,43 @@ class CheepsRouter extends Router
         res.status(StatusCode.Created).json(
             this.createCheepResponse(cheepDocument, userShortInformation)
         );
+    }
+
+    private checkNewCheepForm(req: Request, res: Response, next: NextFunction): Promise<any>
+    {
+        if(typeof req.body !== "object")
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        if(req.body.responseTarget !== undefined && typeof req.body.responseTarget !== "number")
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        if(req.body.quoteTarget !== undefined && typeof req.body.quoteTarget !== "number")
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        if(req.body.content !== undefined && typeof req.body.content !== "string")
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        if(req.body.gallery !== undefined && !Array.isArray(req.body.gallery))
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+
+        req.newCheepForm = {
+            responseTarget: req.body.responseTarget,
+            quoteTarget: req.body.quoteTarget,
+            content: req.body.content,
+            gallery: req.body.gallery
+        };
+
+        next();
     }
 
     private createCheepResponse(cheep: CheepsDocument, userInfo: UserShortInformation): CheepResponse
