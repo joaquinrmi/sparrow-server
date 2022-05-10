@@ -8,7 +8,8 @@ enum ErrorType
     ProfileNotFound = "Profile Not Found",
     IncorrectUsernameOrPassword = "Incorrect Username Or Password",
     SessionDoesNotExist = "Session Does Not Exist",
-    InvalidCheepContent = "Invalid Cheep Content"
+    InvalidCheepContent = "Invalid Cheep Content",
+    CheepDoesNotExist = "Cheep does not exist"
 }
 
 export default ErrorType;
