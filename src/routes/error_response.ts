@@ -87,4 +87,12 @@ export class CheepDoesNotExistResponse extends ErrorResponse
     }
 }
 
+export class CannotDeleteCheepResponse extends ErrorResponse
+{
+    constructor()
+    {
+        super(StatusCode.Unauthorized, [ ErrorType.CannotDeleteCheep ], "The cheep does not exist or you don't have the permissions to delete it.");
+    }
+}
+
 export default ErrorResponse;
