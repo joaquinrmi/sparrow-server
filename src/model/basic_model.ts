@@ -10,7 +10,7 @@ import InnerJoinQuery from "./inner_join_query";
 class BasicModel<DocumentType extends BasicDocument>
 {
     private schema: Schema<DocumentType>;
-    private columnList: Array<keyof DocumentAttributes<DocumentType>>;
+    protected columnList: Array<keyof DocumentAttributes<DocumentType>>;
     protected pool: Pool;
 
     constructor(schema: Schema<DocumentType>, pool: Pool)
