@@ -79,4 +79,12 @@ export class InvalidCheepContentResponse extends ErrorResponse
     }
 }
 
+export class CheepDoesNotExistResponse extends ErrorResponse
+{
+    constructor(id: number)
+    {
+        super(StatusCode.NotFound, [ ErrorType.CheepDoesNotExist ], `Cheep with id ${id} does not exist.`);
+    }
+}
+
 export default ErrorResponse;
