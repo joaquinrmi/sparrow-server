@@ -107,29 +107,55 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return cheepDocument;
     }
 
-    async getCheep(cheepId: number): Promise<CheepsDocument>
+    async getCheep(cheepId: number): Promise<CheepData>
     {
+        let table = this.getTableName();
+        let cheepColumns = this.columnList.map(column => `${table}.${column}`);
+        let userColumns = [ "users.handle" ];
+        let profileColumns = [ "profiles.name", "profiles.picture" ];
+        let columns = [ ...cheepColumns, ...userColumns, ...profileColumns ];
+
+        let query = `SELECT ${columns.join(", ")} FROM cheeps
+            INNER JOIN users ON users.id = cheeps.author
+            INNER JOIN profiles ON profiles.id = users.profile_id
+            WHERE cheeps.id = $1;`;
+
         try
         {
-            var documents = await this.find({
-                props: [
-                    {
-                        id: cheepId
-                    }
-                ]
-            });
+            var response = await this.pool.query(query, [ cheepId ]);
         }
         catch(err)
         {
             throw err;
         }
 
-        if(documents.length === 0)
+        if(response.rowCount === 0)
         {
             return null;
         }
+        
+        let responseOf: CheepData;
+        if(response.rows[0].response_target !== null)
+        {
+            responseOf = await this.getCheep(response.rows[0].response_target);
+        }
 
-        return documents[0];
+        return {
+            id: response.rows[0].id,
+            author: {
+                handle: response.rows[0].handle,
+                name: response.rows[0].name,
+                picture: response.rows[0].picture,
+            },
+            dateCreated: response.rows[0].date_created,
+            quoteTarget: response.rows[0].quote_target,
+            content: response.rows[0].content,
+            gallery: response.rows[0].gallery,
+            comments: response.rows[0].comments,
+            likes: response.rows[0].likes,
+            recheeps: response.rows[0].recheeps,
+            responseOf: responseOf
+        };
     }
 
     async getTimeline(userId: number, maxTime: number): Promise<Array<CheepData>>
@@ -161,6 +187,12 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         for(let i = 0; i < response.rowCount; ++i)
         {
+            let responseOf: CheepData;
+            if(response.rows[i].response_target !== null)
+            {
+                responseOf = await this.getCheep(response.rows[i].response_target);
+            }
+
             result.push({
                 id: response.rows[i].id,
                 author: {
@@ -169,13 +201,13 @@ class CheepsModel extends BasicModel<CheepsDocument>
                     picture: response.rows[i].picture,
                 },
                 dateCreated: response.rows[i].date_created,
-                responseTarget: response.rows[i].response_target,
                 quoteTarget: response.rows[i].quote_target,
                 content: response.rows[i].content,
                 gallery: response.rows[i].gallery,
                 comments: response.rows[i].comments,
                 likes: response.rows[i].likes,
-                recheeps: response.rows[i].recheeps
+                recheeps: response.rows[i].recheeps,
+                responseOf: responseOf
             });
         }
 
@@ -261,13 +293,13 @@ export interface CheepData
         picture: string;
     };
     dateCreated: number;
-    responseTarget: number;
     quoteTarget: number;
     content: string;
     gallery: Array<string>;
     comments: number;
     likes: number;
     recheeps: number;
+    responseOf?: CheepData;
 }
 
 export default CheepsModel;
