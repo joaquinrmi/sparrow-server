@@ -52,8 +52,6 @@ class CheepsRouter extends Router
                 req.model.usersModel,
                 req.model.profilesModel
             );
-
-            var userShortInformation = await req.model.usersModel.getShortInformation(req.session["userId"], req.model.profilesModel);
         }
         catch(err)
         {
@@ -61,9 +59,7 @@ class CheepsRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        res.status(StatusCode.Created).json(
-            this.createCheepResponse(cheepDocument, userShortInformation)
-        );
+        res.status(StatusCode.Created).json(cheepDocument.id);
     }
 
     private async getCheep(req: Request, res: Response): Promise<any>
