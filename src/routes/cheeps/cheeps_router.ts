@@ -1,6 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { CheepData, CheepsDocument } from "../../sparrow_model/cheeps";
-import { UserShortInformation } from "../../sparrow_model/users";
 import checkSession from "../check_session";
 import { CheepDoesNotExistResponse, InternalServerErrorResponse, InvalidCheepContentResponse, InvalidFormResponse, InvalidQueryResponse } from "../error_response";
 import Router from "../router";
