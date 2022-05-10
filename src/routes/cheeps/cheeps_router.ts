@@ -12,14 +12,16 @@ class CheepsRouter extends Router
         super([
             new RouteMap(MethodType.Post, "/create", "createCheep"),
             new RouteMap(MethodType.Get, "/get", "getCheep"),
-            new RouteMap(MethodType.Get, "/timeline", "getTimeline")
+            new RouteMap(MethodType.Get, "/timeline", "getTimeline"),
+            new RouteMap(MethodType.Post, "/like", "likeCheep")
         ]);
 
         this.registerFunction("createCheep", this.createCheep);
         this.registerFunction("getCheep", this.getCheep);
         this.registerFunction("getTimeline", this.getTimeline);
+        this.registerFunction("likeCheep", this.likeCheep);
 
-        this.useMiddleware(checkSession, [ "/create", "/timeline" ]);
+        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
@@ -113,6 +115,26 @@ class CheepsRouter extends Router
             cheeps: timeline,
             nextTime: nextTime
         });
+    }
+
+    private async likeCheep(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.cheepId !== "number")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            await req.model.cheepsModel.registerNewLike(req.query.cheepId);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json();
     }
 
     private checkNewCheepForm(req: Request, res: Response, next: NextFunction): Promise<any>
