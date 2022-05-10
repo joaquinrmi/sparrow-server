@@ -2,9 +2,8 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
-import FollowsModel from "./follows";
 import ProfilesModel from "./profiles";
-import UsersModel, { UsersDocument } from "./users";
+import UsersModel from "./users";
 
 export interface CheepsDocument extends BasicDocument
 {
@@ -137,7 +136,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         let columns = [ ...cheepColumns, ...userColumns, ...profileColumns ];
 
         let query = `SELECT ${columns.join(", ")} FROM cheeps
-            INNER JOIN users ON users.id = cheeps.author
+            INNER JOIN users ON users.id = cheeps.author_id
             INNER JOIN profiles ON profiles.id = users.profile_id
             WHERE cheeps.id = $1;`;
 
@@ -189,7 +188,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         let columns = [ ...cheepColumns, ...userColumns, ...profileColumns ];
 
         const query = `SELECT ${columns.join(", ")} FROM follows
-            INNER JOIN cheeps ON cheeps.author = follows.target_id
+            INNER JOIN cheeps ON cheeps.author_id = follows.target_id
             INNER JOIN users ON users.id = follows.target_id
             INNER JOIN profiles ON profiles.user_id = follows.target_id
             WHERE follows.user_id = $1 AND cheeps.date_created < $2
