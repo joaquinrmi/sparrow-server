@@ -13,13 +13,15 @@ class CheepsRouter extends Router
     {
         super([
             new RouteMap(MethodType.Post, "/create", "createCheep"),
-            new RouteMap(MethodType.Get, "/get", "getCheep")
+            new RouteMap(MethodType.Get, "/get", "getCheep"),
+            new RouteMap(MethodType.Get, "/timeline", "getTimeline")
         ]);
 
         this.registerFunction("createCheep", this.createCheep);
         this.registerFunction("getCheep", this.getCheep);
+        this.registerFunction("getTimeline", this.getTimeline);
 
-        this.useMiddleware(checkSession, [ "/create" ]);
+        this.useMiddleware(checkSession, [ "/create", "/timeline" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
@@ -97,6 +99,36 @@ class CheepsRouter extends Router
         }
 
         res.status(StatusCode.OK).json(this.createCheepResponse(cheepDocument, userInformation));
+    }
+
+    private async getTimeline(req: Request, res: Response): Promise<any>
+    {
+        let maxTime = new Date().getTime();
+        if(typeof req.query.maxTime === "number")
+        {
+            maxTime = req.query.maxTime;
+        }
+
+        try
+        {
+            var timeline = await req.model.cheepsModel.getTimeline(req.session["userId"], maxTime);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        let nextTime = maxTime;
+        if(timeline.length > 0)
+        {
+            nextTime = timeline[timeline.length - 1].dateCreated;
+        }
+
+        res.status(StatusCode.OK).json({
+            cheeps: timeline,
+            nextTime: nextTime
+        });
     }
 
     private checkNewCheepForm(req: Request, res: Response, next: NextFunction): Promise<any>
