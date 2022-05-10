@@ -107,6 +107,27 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return cheepDocument;
     }
 
+    async deleteCheep(userId: number, cheepId: number): Promise<boolean>
+    {
+        try
+        {
+            var deleteCount = await this.delete({
+                props: [
+                    {
+                        id: cheepId,
+                        author_id: userId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return deleteCount > 0;
+    }
+
     async getCheep(cheepId: number): Promise<CheepData>
     {
         let table = this.getTableName();
