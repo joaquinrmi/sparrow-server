@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CheepsDocument } from "../../sparrow_model/cheeps";
+import { CheepData, CheepsDocument } from "../../sparrow_model/cheeps";
 import { UserShortInformation } from "../../sparrow_model/users";
 import checkSession from "../check_session";
 import { CheepDoesNotExistResponse, InternalServerErrorResponse, InvalidCheepContentResponse, InvalidFormResponse, InvalidQueryResponse } from "../error_response";
@@ -136,7 +136,7 @@ class CheepsRouter extends Router
         next();
     }
 
-    private createCheepResponse(cheep: CheepsDocument, userInfo: UserShortInformation): CheepResponse
+    private createCheepResponse(cheep: CheepsDocument, userInfo: UserShortInformation): CheepData
     {
         return {
             id: cheep.id,
@@ -151,24 +151,6 @@ class CheepsRouter extends Router
             recheeps: cheep.recheeps
         };
     }
-}
-
-interface CheepResponse
-{
-    id: number;
-    author: {
-        handle: string;
-        name: string;
-        picture: string;
-    };
-    dateCreated: number;
-    responseTarget?: number;
-    quoteTarget?: number;
-    content?: string;
-    gallery?: Array<string>;
-    comments: number;
-    likes: number;
-    recheeps: number;
 }
 
 export default CheepsRouter;
