@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import checkSession from "../check_session";
-import { CheepDoesNotExistResponse, InternalServerErrorResponse, InvalidCheepContentResponse, InvalidFormResponse, InvalidQueryResponse } from "../error_response";
+import { CannotDeleteCheepResponse, CheepDoesNotExistResponse, InternalServerErrorResponse, InvalidCheepContentResponse, InvalidFormResponse, InvalidQueryResponse } from "../error_response";
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
@@ -13,15 +13,17 @@ class CheepsRouter extends Router
             new RouteMap(MethodType.Post, "/create", "createCheep"),
             new RouteMap(MethodType.Get, "/get", "getCheep"),
             new RouteMap(MethodType.Get, "/timeline", "getTimeline"),
-            new RouteMap(MethodType.Post, "/like", "likeCheep")
+            new RouteMap(MethodType.Post, "/like", "likeCheep"),
+            new RouteMap(MethodType.Post, "/delete", "deleteCheep")
         ]);
 
         this.registerFunction("createCheep", this.createCheep);
         this.registerFunction("getCheep", this.getCheep);
         this.registerFunction("getTimeline", this.getTimeline);
         this.registerFunction("likeCheep", this.likeCheep);
+        this.registerFunction("deleteCheep", this.deleteCheep);
 
-        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like" ]);
+        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/delete" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
@@ -135,6 +137,33 @@ class CheepsRouter extends Router
         }
 
         res.status(StatusCode.OK).json();
+    }
+
+    private async deleteCheep(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.cheepId !== "number")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            var deleted = await req.model.cheepsModel.deleteCheep(req.session["userId"], req.query.cheepId);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(deleted)
+        {
+            return res.status(StatusCode.OK).json();
+        }
+        else
+        {
+            return this.error(res, new CannotDeleteCheepResponse());
+        }
     }
 
     private checkNewCheepForm(req: Request, res: Response, next: NextFunction): Promise<any>
