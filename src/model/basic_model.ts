@@ -87,22 +87,24 @@ class BasicModel<DocumentType extends BasicDocument>
         return this.createDocument(res.rows[0]);
     }
 
-    async delete(conditions: SearchQuery<DocumentType>): Promise<void>
+    async delete(conditions: SearchQuery<DocumentType>): Promise<number>
     {
         let values = [];
         let conditionsStr = this.parseWhere(conditions, values);
         let extraConditionsStr = this.parseExtraConditions(conditions);
 
-        let query = `DELETE FROM ${this.schema.getTableName()} WHERE ${conditionsStr} ${extraConditionsStr}`;
+        let query = `DELETE FROM ${this.schema.getTableName()} WHERE ${conditionsStr} ${extraConditionsStr} RETURNING *`;
 
         try
         {
-            await this.pool.query(query, values);
+            var response = await this.pool.query(query, values);
         }
         catch(err)
         {
             throw err;
         }
+
+        return response.rowCount;
     }
 
     async update(conditions: SearchQuery<DocumentType>, values: UpdateDocument<DocumentType>): Promise<void>
