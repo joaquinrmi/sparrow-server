@@ -9,7 +9,8 @@ enum ErrorType
     IncorrectUsernameOrPassword = "Incorrect Username Or Password",
     SessionDoesNotExist = "Session Does Not Exist",
     InvalidCheepContent = "Invalid Cheep Content",
-    CheepDoesNotExist = "Cheep does not exist"
+    CheepDoesNotExist = "Cheep Does Not Exist",
+    CannotDeleteCheep = "Cannot Delete Cheep"
 }
 
 export default ErrorType;
