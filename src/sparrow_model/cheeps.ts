@@ -94,6 +94,16 @@ class CheepsModel extends BasicModel<CheepsDocument>
             throw err;
         }
 
+        if(cheepDocument.response_target !== null)
+        {
+            this.registerNewComment(cheepDocument.response_target);
+        }
+
+        if(cheepDocument.quote_target !== null)
+        {
+            this.registerNewRecheep(cheepDocument.quote_target);
+        }
+
         return cheepDocument;
     }
 
