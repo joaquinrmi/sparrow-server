@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { CheepsDocument } from "../../sparrow_model/cheeps";
 import { UserShortInformation } from "../../sparrow_model/users";
 import checkSession from "../check_session";
-import { InternalServerErrorResponse, InvalidCheepContentResponse, InvalidFormResponse } from "../error_response";
+import { CheepDoesNotExistResponse, InternalServerErrorResponse, InvalidCheepContentResponse, InvalidFormResponse, InvalidQueryResponse } from "../error_response";
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
@@ -12,10 +12,12 @@ class CheepsRouter extends Router
     constructor()
     {
         super([
-            new RouteMap(MethodType.Post, "/create", "createCheep")
+            new RouteMap(MethodType.Post, "/create", "createCheep"),
+            new RouteMap(MethodType.Get, "/get", "getCheep")
         ]);
 
         this.registerFunction("createCheep", this.createCheep);
+        this.registerFunction("getCheep", this.getCheep);
 
         this.useMiddleware(checkSession, [ "/create" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
@@ -60,6 +62,41 @@ class CheepsRouter extends Router
         res.status(StatusCode.Created).json(
             this.createCheepResponse(cheepDocument, userShortInformation)
         );
+    }
+
+    private async getCheep(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.cheepId !== "number")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            var cheepDocument = await req.model.cheepsModel.getCheep(req.query.cheepId);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(cheepDocument === null)
+        {
+            return this.error(res, new CheepDoesNotExistResponse(req.query.cheepId));
+        }
+
+        try
+        {
+            var userInformation = await req.model.usersModel.getShortInformation(req.session["userId"], req.model.profilesModel);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json(this.createCheepResponse(cheepDocument, userInformation));
     }
 
     private checkNewCheepForm(req: Request, res: Response, next: NextFunction): Promise<any>
