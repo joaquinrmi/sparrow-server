@@ -75,7 +75,7 @@ class CheepsRouter extends Router
 
         try
         {
-            var cheepDocument = await req.model.cheepsModel.getCheep(req.query.cheepId);
+            var cheepData = await req.model.cheepsModel.getCheep(req.query.cheepId);
         }
         catch(err)
         {
@@ -83,22 +83,12 @@ class CheepsRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        if(cheepDocument === null)
+        if(cheepData === null)
         {
             return this.error(res, new CheepDoesNotExistResponse(req.query.cheepId));
         }
 
-        try
-        {
-            var userInformation = await req.model.usersModel.getShortInformation(req.session["userId"], req.model.profilesModel);
-        }
-        catch(err)
-        {
-            console.log(err);
-            return this.error(res, new InternalServerErrorResponse());
-        }
-
-        res.status(StatusCode.OK).json(this.createCheepResponse(cheepDocument, userInformation));
+        res.status(StatusCode.OK).json(cheepData);
     }
 
     private async getTimeline(req: Request, res: Response): Promise<any>
@@ -166,22 +156,6 @@ class CheepsRouter extends Router
         };
 
         next();
-    }
-
-    private createCheepResponse(cheep: CheepsDocument, userInfo: UserShortInformation): CheepData
-    {
-        return {
-            id: cheep.id,
-            author: userInfo,
-            dateCreated: cheep.date_created,
-            responseTarget: cheep.response_target,
-            quoteTarget: cheep.quote_target,
-            content: cheep.content,
-            gallery: cheep.gallery,
-            comments: cheep.comments,
-            likes: cheep.likes,
-            recheeps: cheep.recheeps
-        };
     }
 }
 
