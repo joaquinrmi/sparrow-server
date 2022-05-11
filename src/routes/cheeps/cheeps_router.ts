@@ -14,7 +14,8 @@ class CheepsRouter extends Router
             new RouteMap(MethodType.Get, "/get", "getCheep"),
             new RouteMap(MethodType.Get, "/timeline", "getTimeline"),
             new RouteMap(MethodType.Post, "/like", "likeCheep"),
-            new RouteMap(MethodType.Post, "/delete", "deleteCheep")
+            new RouteMap(MethodType.Post, "/delete", "deleteCheep"),
+            new RouteMap(MethodType.Get, "/search", "searchCheeps")
         ]);
 
         this.registerFunction("createCheep", this.createCheep);
@@ -22,8 +23,9 @@ class CheepsRouter extends Router
         this.registerFunction("getTimeline", this.getTimeline);
         this.registerFunction("likeCheep", this.likeCheep);
         this.registerFunction("deleteCheep", this.deleteCheep);
+        this.registerFunction("searchCheeps", this.searchCheeps);
 
-        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/delete" ]);
+        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/delete", "/search" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
@@ -172,6 +174,46 @@ class CheepsRouter extends Router
         {
             return this.error(res, new CannotDeleteCheepResponse());
         }
+    }
+
+    private async searchCheeps(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.words !== "string")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        let maxTime = new Date().getTime();
+        if(req.query.maxTime)
+        {
+            if(typeof req.query.maxTime !== "number")
+            {
+                return this.error(res, new InvalidQueryResponse());
+            }
+
+            maxTime = req.query.maxTime;
+        }
+
+        try
+        {
+            var cheeps = await req.model.cheepsModel.searchCheeps(req.query.words.split(" "), maxTime);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        let nextTime = maxTime;
+        if(cheeps.length > 0)
+        {
+            nextTime = cheeps[cheeps.length - 1].dateCreated;
+        }
+
+        res.status(StatusCode.OK).json({
+            cheeps: cheeps,
+            nextTime: nextTime
+        });
     }
 
     private checkNewCheepForm(req: Request, res: Response, next: NextFunction): Promise<any>
