@@ -76,9 +76,21 @@ const cheepsSchema = new Schema<CheepsDocument>("cheeps",
 
 class CheepsModel extends BasicModel<CheepsDocument>
 {
+    private cheepDataColumns: Array<string>;
+
     constructor(pool: Pool)
     {
         super(cheepsSchema, pool);
+
+        let cheepColumns = this.columnList.map(column => `cheeps.${column}`);
+        let userColumns = [ "users.handle" ];
+        let profileColumns = [ "profiles.name", "profiles.picture" ];
+
+        this.cheepDataColumns = [
+            ...cheepColumns,
+            ...userColumns,
+            ...profileColumns
+        ];
     }
 
     async cheep(data: CheepsDocument, usersModel: UsersModel, profilesModel: ProfilesModel): Promise<CheepsDocument>
@@ -129,13 +141,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
     async getCheep(cheepId: number): Promise<CheepData>
     {
-        let table = this.getTableName();
-        let cheepColumns = this.columnList.map(column => `${table}.${column}`);
-        let userColumns = [ "users.handle" ];
-        let profileColumns = [ "profiles.name", "profiles.picture" ];
-        let columns = [ ...cheepColumns, ...userColumns, ...profileColumns ];
-
-        let query = `SELECT ${columns.join(", ")} FROM cheeps
+        let query = `SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
             INNER JOIN users ON users.id = cheeps.author_id
             INNER JOIN profiles ON profiles.id = users.profile_id
             WHERE cheeps.id = $1;`;
@@ -180,14 +186,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
     async getTimeline(userId: number, maxTime: number): Promise<Array<CheepData>>
     {
-        let table = this.getTableName();
-        let cheepColumns = this.columnList.map(column => `${table}.${column}`);
-        let userColumns = [ "users.handle" ];
-        let profileColumns = [ "profiles.name", "profiles.picture" ];
-
-        let columns = [ ...cheepColumns, ...userColumns, ...profileColumns ];
-
-        const query = `SELECT ${columns.join(", ")} FROM follows
+        const query = `SELECT ${this.cheepDataColumns.join(", ")} FROM follows
             INNER JOIN cheeps ON cheeps.author_id = follows.target_id
             INNER JOIN users ON users.id = follows.target_id
             INNER JOIN profiles ON profiles.user_id = follows.target_id
