@@ -40,6 +40,14 @@ class CheepsRouter extends Router
             gallery = req.newCheepForm.gallery;
         }
 
+        if(req.newCheepForm.content !== undefined)
+        {
+            if(req.newCheepForm.content.length > 280)
+            {
+                return this.error(res, new InvalidFormResponse("Cheeps must have 280 character or less."));
+            }
+        }
+
         try
         {
             var cheepDocument = await req.model.cheepsModel.cheep(
