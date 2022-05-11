@@ -163,28 +163,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         for(let i = 0; i < response.rowCount; ++i)
         {
-            let responseOf: CheepData;
-            if(response.rows[i].response_target !== null)
-            {
-                responseOf = await this.getCheep(response.rows[i].response_target);
-            }
-
-            result.push({
-                id: response.rows[i].id,
-                author: {
-                    handle: response.rows[i].handle,
-                    name: response.rows[i].name,
-                    picture: response.rows[i].picture,
-                },
-                dateCreated: response.rows[i].date_created,
-                quoteTarget: response.rows[i].quote_target,
-                content: response.rows[i].content,
-                gallery: response.rows[i].gallery,
-                comments: response.rows[i].comments,
-                likes: response.rows[i].likes,
-                recheeps: response.rows[i].recheeps,
-                responseOf: responseOf
-            });
+            result.push(await this.createCheepData(response.rows[i]));
         }
 
         return result;
@@ -210,29 +189,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
         {
             return null;
         }
-        
-        let responseOf: CheepData;
-        if(response.rows[0].response_target !== null)
-        {
-            responseOf = await this.getCheep(response.rows[0].response_target);
-        }
 
-        return {
-            id: response.rows[0].id,
-            author: {
-                handle: response.rows[0].handle,
-                name: response.rows[0].name,
-                picture: response.rows[0].picture,
-            },
-            dateCreated: response.rows[0].date_created,
-            quoteTarget: response.rows[0].quote_target,
-            content: response.rows[0].content,
-            gallery: response.rows[0].gallery,
-            comments: response.rows[0].comments,
-            likes: response.rows[0].likes,
-            recheeps: response.rows[0].recheeps,
-            responseOf: responseOf
-        };
+        return this.createCheepData(response.rows[0]);
     }
 
     async getTimeline(userId: number, maxTime: number): Promise<Array<CheepData>>
@@ -257,28 +215,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         for(let i = 0; i < response.rowCount; ++i)
         {
-            let responseOf: CheepData;
-            if(response.rows[i].response_target !== null)
-            {
-                responseOf = await this.getCheep(response.rows[i].response_target);
-            }
-
-            result.push({
-                id: response.rows[i].id,
-                author: {
-                    handle: response.rows[i].handle,
-                    name: response.rows[i].name,
-                    picture: response.rows[i].picture,
-                },
-                dateCreated: response.rows[i].date_created,
-                quoteTarget: response.rows[i].quote_target,
-                content: response.rows[i].content,
-                gallery: response.rows[i].gallery,
-                comments: response.rows[i].comments,
-                likes: response.rows[i].likes,
-                recheeps: response.rows[i].recheeps,
-                responseOf: responseOf
-            });
+            result.push(await this.createCheepData(response.rows[i]));
         }
 
         return result;
@@ -351,6 +288,32 @@ class CheepsModel extends BasicModel<CheepsDocument>
         {
             throw err;
         }
+    }
+
+    private async createCheepData(rowData: any): Promise<CheepData>
+    {
+        let responseOf: CheepData;
+        if(rowData.response_target !== null)
+        {
+            responseOf = await this.getCheep(rowData.response_target);
+        }
+
+        return {
+            id: rowData.id,
+            author: {
+                handle: rowData.handle,
+                name: rowData.name,
+                picture: rowData.picture,
+            },
+            dateCreated: rowData.date_created,
+            quoteTarget: rowData.quote_target,
+            content: rowData.content,
+            gallery: rowData.gallery,
+            comments: rowData.comments,
+            likes: rowData.likes,
+            recheeps: rowData.recheeps,
+            responseOf: responseOf
+        };
     }
 }
 
