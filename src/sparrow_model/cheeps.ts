@@ -139,6 +139,57 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return deleteCount > 0;
     }
 
+    async searchCheeps(words: Array<string>, maxTime: number): Promise<Array<CheepData>>
+    {
+        let query = `SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
+            INNER JOIN users ON users.id = cheeps.author_id
+            INNER JOIN profiles ON profiles.id = users.profile_id
+            WHERE ${words.map((word) =>
+            {
+                return `cheeps.content LIKE '%${word}%'`;
+            }).join(" AND ")} AND cheeps.date_created < $1
+            ORDER BY users.date_created DESC LIMIT 20;`;
+
+        try
+        {
+            var response = await this.pool.query(query, [ maxTime ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let result = new Array<CheepData>();
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            let responseOf: CheepData;
+            if(response.rows[i].response_target !== null)
+            {
+                responseOf = await this.getCheep(response.rows[i].response_target);
+            }
+
+            result.push({
+                id: response.rows[i].id,
+                author: {
+                    handle: response.rows[i].handle,
+                    name: response.rows[i].name,
+                    picture: response.rows[i].picture,
+                },
+                dateCreated: response.rows[i].date_created,
+                quoteTarget: response.rows[i].quote_target,
+                content: response.rows[i].content,
+                gallery: response.rows[i].gallery,
+                comments: response.rows[i].comments,
+                likes: response.rows[i].likes,
+                recheeps: response.rows[i].recheeps,
+                responseOf: responseOf
+            });
+        }
+
+        return result;
+    }
+
     async getCheep(cheepId: number): Promise<CheepData>
     {
         let query = `SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
