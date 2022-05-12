@@ -107,7 +107,7 @@ class BasicModel<DocumentType extends BasicDocument>
         return response.rowCount;
     }
 
-    async update(conditions: SearchQuery<DocumentType>, values: UpdateDocument<DocumentType>): Promise<void>
+    async update(conditions: SearchQuery<DocumentType>, values: UpdateDocument<DocumentType>): Promise<number>
     {
         let queryValues = [];
         let conditionsStr = this.parseWhere(conditions, queryValues);
@@ -127,16 +127,18 @@ class BasicModel<DocumentType extends BasicDocument>
             }
         }
 
-        let query = `UPDATE ${this.schema.getTableName()} SET ${columns.join(", ")} ${conditionsStr} ${extraConditionsStr}`;
+        let query = `UPDATE ${this.schema.getTableName()} SET ${columns.join(", ")} ${conditionsStr} ${extraConditionsStr} RETURNING *`;
 
         try
         {
-            await this.pool.query(query, queryValues);
+            var resonse = await this.pool.query(query, queryValues);
         }
         catch(err)
         {
             throw err;
         }
+
+        return resonse.rowCount;
     }
 
     async find(conditions: SearchQuery<DocumentType>, columns?: Array<keyof DocumentAttributes<DocumentType>>): Promise<Array<DocumentType>>
