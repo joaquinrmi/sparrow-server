@@ -16,7 +16,8 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Post, "/login", "login"),
             new RouteMap(MethodType.Post, "/logout", "logout"),
             new RouteMap(MethodType.Get, "/user-info", "getUserInformation"),
-            new RouteMap(MethodType.Post, "/follow", "followUser")
+            new RouteMap(MethodType.Post, "/follow", "followUser"),
+            new RouteMap(MethodType.Post, "/unfollow", "unfollowUser")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
@@ -24,8 +25,9 @@ class UsersRouter extends Router
         this.registerFunction("logout", this.logout);
         this.registerFunction("getUserInformation", this.getUserInformation);
         this.registerFunction("followUser", this.followUser);
+        this.registerFunction("unfollowUser", this.unfollowUser);
 
-        this.useMiddleware(this.checkNewUserForm, [ "/create", "/follow" ]);
+        this.useMiddleware(this.checkNewUserForm, [ "/create", "/follow", "/unfollow" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
         this.useMiddleware(checkSession, [ "/user-info" ]);
     }
@@ -240,6 +242,33 @@ class UsersRouter extends Router
         if(followed)
         {
             res.status(StatusCode.Created).json();
+        }
+        else
+        {
+            res.status(StatusCode.Conflict).json();
+        }
+    }
+
+    private async unfollowUser(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.userId !== "number" && typeof req.query.userId !== "string")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            var unfollowed = await req.model.usersModel.unfollow(req.session["userId"], Number(req.query.userId), req.model.followsModel);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(unfollowed)
+        {
+            res.status(StatusCode.OK).json();
         }
         else
         {
