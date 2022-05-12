@@ -141,8 +141,33 @@ class UsersModel extends BasicModel<UsersDocument>
         };
     }
 
-    async follow(userId: number, targetId: number, followsModel: FollowsModel): Promise<boolean>
+    async follow(userHandle: string, targetId: number, followsModel: FollowsModel): Promise<boolean>
     {
+        try
+        {
+            var userDocument = await this.find(
+                {
+                    props: [
+                        {
+                            handle: userHandle
+                        }
+                    ]
+                },
+                [ "id" ]
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(userDocument.length === 0)
+        {
+            return false;
+        }
+
+        const userId = userDocument[0].id;
+
         if(await followsModel.exists({
             props: [
                 {
