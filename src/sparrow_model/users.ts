@@ -3,6 +3,7 @@ import { encrypt } from "../encryption";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import FollowsModel from "./follows";
 import ProfilesModel from "./profiles";
 
 export interface UsersDocument extends BasicDocument
@@ -137,6 +138,51 @@ class UsersModel extends BasicModel<UsersDocument>
             name: profile.name,
             picture: profile.picture
         };
+    }
+
+    async follow(userId: number, targetId: number, followsModel: FollowsModel): Promise<boolean>
+    {
+        const updateProfileQuery = `
+            UPDATE profiles
+            SET profiles.following = profiles.following + 1
+            FROM profiles INNER JOIN users ON profiles.id = users.profile_id
+            WHERE users.id = $1;
+        `;
+
+        const updateTargetQuery = `
+            UPDATE profiles
+            SET profiles.followers = profiles.followers + 1
+            FROM profiles INNER JOIN users ON profiles.id = users.profile_id
+            WHERE users.id = $1
+            RETURNING *;
+        `;
+
+        try
+        {
+            var utResponse = await this.pool.query(updateTargetQuery, [ targetId ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(utResponse.rowCount === 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            await this.pool.query(updateProfileQuery, [ userId ]);
+            await followsModel.registerFollow(userId, targetId);
+
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return true;
     }
 }
 
