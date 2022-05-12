@@ -78,14 +78,14 @@ class CheepsRouter extends Router
 
     private async getCheep(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.cheepId !== "number")
+        if(typeof req.query.cheepId !== "string")
         {
             return this.error(res, new InvalidQueryResponse());
         }
 
         try
         {
-            var cheepData = await req.model.cheepsModel.getCheep(req.query.cheepId);
+            var cheepData = await req.model.cheepsModel.getCheep(Number(req.query.cheepId));
         }
         catch(err)
         {
@@ -95,7 +95,7 @@ class CheepsRouter extends Router
 
         if(cheepData === null)
         {
-            return this.error(res, new CheepDoesNotExistResponse(req.query.cheepId));
+            return this.error(res, new CheepDoesNotExistResponse(Number(req.query.cheepId)));
         }
 
         res.status(StatusCode.OK).json(cheepData);
