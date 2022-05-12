@@ -10,6 +10,7 @@ export interface ProfilesDocument extends BasicDocument
     name: string;
     picture: string;
     banner?: string;
+    description?: string;
     join_date: number;
     birth_date?: number;
     location?: string;
@@ -34,6 +35,9 @@ const profilesSchema = new Schema<ProfilesDocument>("profiles",
         notNull: true
     },
     banner: {
+        type: "text"
+    },
+    description: {
         type: "text"
     },
     join_date: {
