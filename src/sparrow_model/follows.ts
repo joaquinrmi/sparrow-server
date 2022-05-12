@@ -5,7 +5,7 @@ import Schema from "../model/schema/schema";
 
 export interface FollowsDocument extends BasicDocument
 {
-    id: number;
+    id?: number;
     user_id: number;
     target_id: number;
 }
@@ -39,6 +39,21 @@ class FollowsModel extends BasicModel<FollowsDocument>
     constructor(pool: Pool)
     {
         super(followsSchema, pool);
+    }
+
+    async registerFollow(userId: number, targetId: number): Promise<void>
+    {
+        try
+        {
+            await this.create({
+                user_id: userId,
+                target_id: targetId
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
     }
 }
 
