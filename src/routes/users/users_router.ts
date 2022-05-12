@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { InternalServerErrorResponse, InvalidCredentialsResponse, InvalidFormResponse, UserAlreadyExistsResponse } from "../error_response";
+import { InternalServerErrorResponse, InvalidCredentialsResponse, InvalidFormResponse, InvalidQueryResponse, UserAlreadyExistsResponse } from "../error_response";
 import ErrorType from "../error_type";
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
@@ -15,15 +15,17 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Post, "/create", "createNewUser"),
             new RouteMap(MethodType.Post, "/login", "login"),
             new RouteMap(MethodType.Post, "/logout", "logout"),
-            new RouteMap(MethodType.Get, "/user-info", "getUserInformation")
+            new RouteMap(MethodType.Get, "/user-info", "getUserInformation"),
+            new RouteMap(MethodType.Post, "/follow", "followUser")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
         this.registerFunction("login", this.login);
         this.registerFunction("logout", this.logout);
         this.registerFunction("getUserInformation", this.getUserInformation);
+        this.registerFunction("followUser", this.followUser);
 
-        this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
+        this.useMiddleware(this.checkNewUserForm, [ "/create", "/follow" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
         this.useMiddleware(checkSession, [ "/user-info" ]);
     }
@@ -216,6 +218,33 @@ class UsersRouter extends Router
         }
 
         res.status(StatusCode.OK).json(userShortInformation);
+    }
+
+    private async followUser(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.userId !== "number" && typeof req.query.userId !== "string")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            var followed = await req.model.usersModel.follow(req.session["userId"], Number(req.query.userId), req.model.followsModel);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(followed)
+        {
+            res.status(StatusCode.Created).json();
+        }
+        else
+        {
+            res.status(StatusCode.Conflict).json();
+        }
     }
 
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
