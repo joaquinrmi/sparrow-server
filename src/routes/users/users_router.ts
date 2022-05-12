@@ -255,14 +255,14 @@ class UsersRouter extends Router
 
     private async unfollowUser(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.userId !== "number" && typeof req.query.userId !== "string")
+        if(typeof req.body.handle !== "string")
         {
-            return this.error(res, new InvalidQueryResponse());
+            return this.error(res, new InvalidFormResponse());
         }
 
         try
         {
-            var unfollowed = await req.model.usersModel.unfollow(req.session["userId"], Number(req.query.userId), req.model.followsModel);
+            var followed = await req.model.usersModel.unfollow(req.session["userId"], req.body.handle, req.model.followsModel);
         }
         catch(err)
         {
@@ -270,7 +270,7 @@ class UsersRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        if(unfollowed)
+        if(followed)
         {
             res.status(StatusCode.OK).json();
         }
