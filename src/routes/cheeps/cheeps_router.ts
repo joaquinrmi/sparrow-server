@@ -168,14 +168,14 @@ class CheepsRouter extends Router
 
     private async likeCheep(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.cheepId !== "number")
+        if(req.query.cheepId === undefined)
         {
             return this.error(res, new InvalidQueryResponse());
         }
 
         try
         {
-            await req.model.cheepsModel.registerNewLike(req.query.cheepId);
+            await req.model.cheepsModel.registerNewLike(req.session["userId"], Number(req.query.cheepId), req.model.likesModel);
         }
         catch(err)
         {
