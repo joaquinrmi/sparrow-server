@@ -184,6 +184,57 @@ class UsersModel extends BasicModel<UsersDocument>
 
         return true;
     }
+
+    async unfollow(userId: number, targetId: number, followsModel: FollowsModel): Promise<boolean>
+    {
+        const updateProfileQuery = `
+            UPDATE profiles
+            SET profiles.following = profiles.following - 1
+            FROM profiles INNER JOIN users ON profiles.id = users.profile_id
+            WHERE users.id = $1;
+        `;
+
+        const updateTargetQuery = `
+            UPDATE profiles
+            SET profiles.followers = profiles.followers - 1
+            FROM profiles INNER JOIN users ON profiles.id = users.profile_id
+            WHERE users.id = $1
+            RETURNING *;
+        `;
+
+        try
+        {
+            var utResponse = await this.pool.query(updateTargetQuery, [ targetId ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(utResponse.rowCount === 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            await this.pool.query(updateProfileQuery, [ userId ]);
+            await followsModel.delete({
+                props: [
+                    {
+                        user_id: userId,
+                        target_id: targetId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return true;
+    }
 }
 
 export interface UserShortInformation
