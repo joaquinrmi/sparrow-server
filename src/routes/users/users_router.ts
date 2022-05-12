@@ -18,7 +18,8 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Get, "/user-info", "getUserInformation"),
             new RouteMap(MethodType.Post, "/follow", "followUser"),
             new RouteMap(MethodType.Post, "/unfollow", "unfollowUser"),
-            new RouteMap(MethodType.Get, "/follower-list", "getFollowers")
+            new RouteMap(MethodType.Get, "/follower-list", "getFollowers"),
+            new RouteMap(MethodType.Get, "/following-list", "getFollowing")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
@@ -28,10 +29,11 @@ class UsersRouter extends Router
         this.registerFunction("followUser", this.followUser);
         this.registerFunction("unfollowUser", this.unfollowUser);
         this.registerFunction("getFollowers", this.getFollowers);
+        this.registerFunction("getFollowing", this.getFollowing);
 
-        this.useMiddleware(this.checkNewUserForm, [ "/create", "/follow", "/unfollow", "/follower-list" ]);
+        this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
-        this.useMiddleware(checkSession, [ "/user-info" ]);
+        this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list" ]);
     }
 
     private async createNewUser(req: Request, res: Response): Promise<any>
@@ -294,6 +296,32 @@ class UsersRouter extends Router
         try
         {
             var followers = await req.model.followsModel.getFollowers(req.session["userId"], Number(req.query.userId), offset);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json(followers);
+    }
+
+    private async getFollowing(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.userId !== "number" && typeof req.query.userId !== "string")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        let offset = Number.MAX_SAFE_INTEGER;
+        if(typeof req.query.offset === "number" || typeof req.query.offset === "string")
+        {
+            offset = Number(req.query.offset);
+        }
+
+        try
+        {
+            var followers = await req.model.followsModel.getFollowing(req.session["userId"], Number(req.query.userId), offset);
         }
         catch(err)
         {
