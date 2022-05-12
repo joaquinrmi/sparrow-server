@@ -139,20 +139,33 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return deleteCount > 0;
     }
 
-    async searchCheeps(words: Array<string>, maxTime: number): Promise<Array<CheepData>>
+    async searchCheeps(words: Array<string>, maxTime: number, userHandle?: string): Promise<Array<CheepData>>
     {
+        let values: Array<any> = [ maxTime ];
+
+        let whereConditions = [
+            words.map((word) =>
+            {
+                return `cheeps.content LIKE '%${word}%'`;
+            }).join(" AND "),
+            `cheeps.date_created < $1`
+        ];
+
+        if(userHandle)
+        {
+            whereConditions.push(`users.handle = $2`);
+            values.push(userHandle);
+        }
+
         let query = `SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
             INNER JOIN users ON users.id = cheeps.author_id
             INNER JOIN profiles ON profiles.id = users.profile_id
-            WHERE ${words.map((word) =>
-            {
-                return `cheeps.content LIKE '%${word}%'`;
-            }).join(" AND ")} AND cheeps.date_created < $1
+            WHERE ${whereConditions.join(" AND ")}
             ORDER BY users.date_created DESC LIMIT 20;`;
 
         try
         {
-            var response = await this.pool.query(query, [ maxTime ]);
+            var response = await this.pool.query(query, values);
         }
         catch(err)
         {
