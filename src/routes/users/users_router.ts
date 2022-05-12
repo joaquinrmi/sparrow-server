@@ -83,7 +83,7 @@ class UsersRouter extends Router
         {
             var profileDocument = await req.model.profilesModel.create({
                 name: req.newUserForm.fullName,
-                birth_date: req.newUserForm.birthdate,
+                birthdate: req.newUserForm.birthdate,
                 picture: "",
                 join_date: new Date().getTime()
             });

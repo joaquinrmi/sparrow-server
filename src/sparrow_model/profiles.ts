@@ -13,7 +13,7 @@ export interface ProfilesDocument extends BasicDocument
     banner?: string;
     description?: string;
     join_date: number;
-    birth_date?: number;
+    birthdate?: number;
     location?: string;
     website?: string;
     following?: number;
@@ -45,7 +45,7 @@ const profilesSchema = new Schema<ProfilesDocument>("profiles",
         type: "bigint",
         notNull: true
     },
-    birth_date: {
+    birthdate: {
         type: "bigint"
     },
     location: {
