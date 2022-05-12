@@ -228,14 +228,14 @@ class UsersRouter extends Router
 
     private async followUser(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.userId !== "number" && typeof req.query.userId !== "string")
+        if(typeof req.body.handle !== "string")
         {
-            return this.error(res, new InvalidQueryResponse());
+            return this.error(res, new InvalidFormResponse());
         }
 
         try
         {
-            var followed = await req.model.usersModel.follow(req.session["userId"], Number(req.query.userId), req.model.followsModel);
+            var followed = await req.model.usersModel.follow(req.session["userId"], req.body.handle, req.model.followsModel);
         }
         catch(err)
         {
