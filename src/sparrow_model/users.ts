@@ -141,7 +141,7 @@ class UsersModel extends BasicModel<UsersDocument>
         };
     }
 
-    async follow(userHandle: string, targetId: number, followsModel: FollowsModel): Promise<boolean>
+    async follow(userId: number, targetHandle: string, followsModel: FollowsModel): Promise<boolean>
     {
         try
         {
@@ -149,7 +149,7 @@ class UsersModel extends BasicModel<UsersDocument>
                 {
                     props: [
                         {
-                            handle: userHandle
+                            handle: targetHandle
                         }
                     ]
                 },
@@ -166,7 +166,7 @@ class UsersModel extends BasicModel<UsersDocument>
             return false;
         }
 
-        const userId = userDocument[0].id;
+        const targetId = userDocument[0].id;
 
         if(await followsModel.exists({
             props: [
