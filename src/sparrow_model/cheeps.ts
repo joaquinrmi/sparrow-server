@@ -247,6 +247,53 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return result;
     }
 
+    async getLikedCheeps(userHandle: string, maxTime: number, usersModel: UsersModel): Promise<Array<CheepData>>
+    {
+        try
+        {
+            var userDocuments = await usersModel.find(
+                { props: [ { handle: userHandle } ]},
+                [ "id" ]
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(userDocuments.length === 0)
+        {
+            return [];
+        }
+
+        const userId = userDocuments[0].id;
+
+        const query = `SELECT ${this.cheepDataColumns.join(", ")} FROM likes
+            INNER JOIN cheeps ON cheeps.id = likes.cheep_id
+            INNER JOIN users ON users.id = cheeps.author_id
+            INNER JOIN profiles ON profiles.id = users.profile_id
+            WHERE likes.user_id = $1 AND cheeps.date_created < $2
+            ORDER BY cheeps.date_created DESC LIMIT 20;`;
+
+        try
+        {
+            var response = await this.pool.query(query, [ userId, maxTime ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let result = new Array<CheepData>();
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            result.push(await this.createCheepData(response.rows[i]));
+        }
+
+        return result;
+    }
+
     async registerNewComment(cheepId: number): Promise<void>
     {
         try
