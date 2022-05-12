@@ -56,7 +56,7 @@ class CheepsRouter extends Router
         {
             var cheepDocument = await req.model.cheepsModel.cheep(
                 {
-                    author_id: req.session["authorId"],
+                    author_id: req.session["userId"],
                     date_created: new Date().getTime(),
                     response_target: req.newCheepForm.responseTarget,
                     quote_target: req.newCheepForm.quoteTarget,
