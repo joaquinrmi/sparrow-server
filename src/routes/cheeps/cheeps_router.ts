@@ -178,13 +178,19 @@ class CheepsRouter extends Router
 
     private async searchCheeps(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.words !== "string")
+        let words = new Array<string>();
+        if(req.query.words !== undefined)
         {
-            return this.error(res, new InvalidQueryResponse());
+            if(typeof req.query.words !== "string")
+            {
+                return this.error(res, new InvalidQueryResponse());
+            }
+
+            words = (req.query.words as string).split(" ");
         }
 
         let maxTime = new Date().getTime();
-        if(req.query.maxTime)
+        if(req.query.maxTime !== undefined)
         {
             if(typeof req.query.maxTime !== "number")
             {
@@ -194,9 +200,20 @@ class CheepsRouter extends Router
             maxTime = req.query.maxTime;
         }
 
+        let userHandle: string;
+        if(req.query.userHandle !== undefined)
+        {
+            if(typeof req.query.userHandle !== "string")
+            {
+                return this.error(res, new InvalidQueryResponse());
+            }
+
+            userHandle = req.query.userHandle;
+        }
+
         try
         {
-            var cheeps = await req.model.cheepsModel.searchCheeps(req.query.words.split(" "), maxTime);
+            var cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, userHandle);
         }
         catch(err)
         {
