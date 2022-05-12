@@ -211,9 +211,15 @@ class CheepsRouter extends Router
             userHandle = req.query.userHandle;
         }
 
+        let responses = true;
+        if(req.query.responses !== undefined)
+        {
+            responses = Boolean(req.query.responses);
+        }
+
         try
         {
-            var cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, userHandle);
+            var cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, responses, userHandle);
         }
         catch(err)
         {
