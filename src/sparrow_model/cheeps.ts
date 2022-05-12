@@ -143,13 +143,16 @@ class CheepsModel extends BasicModel<CheepsDocument>
     {
         let values: Array<any> = [ maxTime ];
 
-        let whereConditions = [
-            words.map((word) =>
+        let whereConditions = new Array<string>();
+        if(words.length > 0)
+        {
+            whereConditions.push(words.map((word) =>
             {
                 return `cheeps.content LIKE '%${word}%'`;
-            }).join(" AND "),
-            `cheeps.date_created < $1`
-        ];
+            }).join(" AND "));
+        }
+
+        whereConditions.push(`cheeps.date_created < $1`);
 
         if(userHandle)
         {
