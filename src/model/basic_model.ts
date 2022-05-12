@@ -93,7 +93,7 @@ class BasicModel<DocumentType extends BasicDocument>
         let conditionsStr = this.parseWhere(conditions, values);
         let extraConditionsStr = this.parseExtraConditions(conditions);
 
-        let query = `DELETE FROM ${this.schema.getTableName()} WHERE ${conditionsStr} ${extraConditionsStr} RETURNING *`;
+        let query = `DELETE FROM ${this.schema.getTableName()} ${conditionsStr} ${extraConditionsStr} RETURNING *`;
 
         try
         {
