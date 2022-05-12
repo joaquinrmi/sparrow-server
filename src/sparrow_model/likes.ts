@@ -5,7 +5,7 @@ import Schema from "../model/schema/schema";
 
 export interface LikesDocument extends BasicDocument
 {
-    id: number;
+    id?: number;
     cheep_id: number;
     user_id: number;
 }
