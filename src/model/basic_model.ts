@@ -69,6 +69,11 @@ class BasicModel<DocumentType extends BasicDocument>
 
         for(let column in document)
         {
+            if(document[column] === undefined)
+            {
+                continue;
+            }
+            
             columnNames.push(column);
             values.push(document[column]);
         }
