@@ -17,7 +17,8 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Post, "/logout", "logout"),
             new RouteMap(MethodType.Get, "/user-info", "getUserInformation"),
             new RouteMap(MethodType.Post, "/follow", "followUser"),
-            new RouteMap(MethodType.Post, "/unfollow", "unfollowUser")
+            new RouteMap(MethodType.Post, "/unfollow", "unfollowUser"),
+            new RouteMap(MethodType.Get, "/follower-list", "getFollowers")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
@@ -26,8 +27,9 @@ class UsersRouter extends Router
         this.registerFunction("getUserInformation", this.getUserInformation);
         this.registerFunction("followUser", this.followUser);
         this.registerFunction("unfollowUser", this.unfollowUser);
+        this.registerFunction("getFollowers", this.getFollowers);
 
-        this.useMiddleware(this.checkNewUserForm, [ "/create", "/follow", "/unfollow" ]);
+        this.useMiddleware(this.checkNewUserForm, [ "/create", "/follow", "/unfollow", "/follower-list" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
         this.useMiddleware(checkSession, [ "/user-info" ]);
     }
@@ -274,6 +276,32 @@ class UsersRouter extends Router
         {
             res.status(StatusCode.Conflict).json();
         }
+    }
+
+    private async getFollowers(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.query.userId !== "number" && typeof req.query.userId !== "string")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        let offset = Number.MAX_SAFE_INTEGER;
+        if(typeof req.query.offset === "number" || typeof req.query.offset === "string")
+        {
+            offset = Number(req.query.offset);
+        }
+
+        try
+        {
+            var followers = await req.model.followsModel.getFollowers(req.session["userId"], Number(req.query.userId), offset);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json(followers);
     }
 
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
