@@ -13,6 +13,7 @@ class CheepsRouter extends Router
             new RouteMap(MethodType.Post, "/create", "createCheep"),
             new RouteMap(MethodType.Get, "/get", "getCheep"),
             new RouteMap(MethodType.Get, "/timeline", "getTimeline"),
+            new RouteMap(MethodType.Get, "/liked-list", "getLikedCheeps"),
             new RouteMap(MethodType.Post, "/like", "likeCheep"),
             new RouteMap(MethodType.Post, "/delete", "deleteCheep"),
             new RouteMap(MethodType.Get, "/search", "searchCheeps")
@@ -21,6 +22,7 @@ class CheepsRouter extends Router
         this.registerFunction("createCheep", this.createCheep);
         this.registerFunction("getCheep", this.getCheep);
         this.registerFunction("getTimeline", this.getTimeline);
+        this.registerFunction("getLikedCheeps", this.getLikedCheeps);
         this.registerFunction("likeCheep", this.likeCheep);
         this.registerFunction("deleteCheep", this.deleteCheep);
         this.registerFunction("searchCheeps", this.searchCheeps);
@@ -125,6 +127,41 @@ class CheepsRouter extends Router
 
         res.status(StatusCode.OK).json({
             cheeps: timeline,
+            nextTime: nextTime
+        });
+    }
+
+    private async getLikedCheeps(req: Request, res: Response): Promise<any>
+    {
+        let maxTime = new Date().getTime();
+        if(req.query.maxTime !== undefined)
+        {
+            maxTime = Number(req.query.maxTime);
+        }
+
+        if(typeof req.query.userHandle !== "string")
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            var likedCheeps = await req.model.cheepsModel.getLikedCheeps(req.query.userHandle, maxTime, req.model.usersModel);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        let nextTime = maxTime;
+        if(likedCheeps.length > 0)
+        {
+            nextTime = likedCheeps[likedCheeps.length - 1].dateCreated;
+        }
+
+        res.status(StatusCode.OK).json({
+            cheeps: likedCheeps,
             nextTime: nextTime
         });
     }
