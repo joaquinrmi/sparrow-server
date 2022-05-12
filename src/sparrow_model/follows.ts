@@ -65,7 +65,7 @@ class FollowsModel extends BasicModel<FollowsDocument>
         const query = `
             SELECT follows.id, users.id AS user_id, users.handle, profiles.name, profiles.picture, profiles.description
             FROM follows
-            INNER JOIN users ON users.id = follows.target_id
+            INNER JOIN users ON users.id = follows.user_id
             INNER JOIN profiles ON profiles.id = users.profile_id
             WHERE follows.target_id = $1 AND follows.id < $2
             LIMIT 20;
