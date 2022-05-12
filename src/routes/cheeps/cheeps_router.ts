@@ -217,9 +217,15 @@ class CheepsRouter extends Router
             responses = Boolean(req.query.responses);
         }
 
+        let onlyGallery = false;
+        if(req.query.onlyGallery !== undefined)
+        {
+            onlyGallery = Boolean(req.query.onlyGallery);
+        }
+
         try
         {
-            var cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, responses, userHandle);
+            var cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, responses, onlyGallery, userHandle);
         }
         catch(err)
         {
