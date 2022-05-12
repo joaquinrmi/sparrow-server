@@ -145,7 +145,7 @@ class UsersModel extends BasicModel<UsersDocument>
     {
         try
         {
-            var userDocument = await this.find(
+            var tuDoc = await this.find(
                 {
                     props: [
                         {
@@ -153,7 +153,7 @@ class UsersModel extends BasicModel<UsersDocument>
                         }
                     ]
                 },
-                [ "id" ]
+                [ "id", "profile_id" ]
             );
         }
         catch(err)
@@ -161,12 +161,38 @@ class UsersModel extends BasicModel<UsersDocument>
             throw err;
         }
 
-        if(userDocument.length === 0)
+        if(tuDoc.length === 0)
         {
             return false;
         }
 
-        const targetId = userDocument[0].id;
+        const targetId = tuDoc[0].id;
+        const targetProfileId = tuDoc[0].profile_id;
+
+        try
+        {
+            var userDoc = await this.find(
+                {
+                    props: [
+                        {
+                            id: userId
+                        }
+                    ]
+                },
+                [ "profile_id" ]
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(userDoc.length === 0)
+        {
+            return false;
+        }
+
+        const userProfileId = userDoc[0].profile_id;
 
         if(await followsModel.exists({
             props: [
@@ -182,22 +208,20 @@ class UsersModel extends BasicModel<UsersDocument>
 
         const updateProfileQuery = `
             UPDATE profiles
-            SET profiles.following = profiles.following + 1
-            FROM profiles INNER JOIN users ON profiles.id = users.profile_id
-            WHERE users.id = $1;
+            SET following = following + 1
+            WHERE id = $1;
         `;
 
         const updateTargetQuery = `
             UPDATE profiles
-            SET profiles.followers = profiles.followers + 1
-            FROM profiles INNER JOIN users ON profiles.id = users.profile_id
-            WHERE users.id = $1
+            SET followers = followers + 1
+            WHERE id = $1
             RETURNING *;
         `;
 
         try
         {
-            var utResponse = await this.pool.query(updateTargetQuery, [ targetId ]);
+            var utResponse = await this.pool.query(updateTargetQuery, [ targetProfileId ]);
         }
         catch(err)
         {
@@ -211,7 +235,7 @@ class UsersModel extends BasicModel<UsersDocument>
 
         try
         {
-            await this.pool.query(updateProfileQuery, [ userId ]);
+            await this.pool.query(updateProfileQuery, [ userProfileId ]);
             await followsModel.registerFollow(userId, targetId);
 
         }
