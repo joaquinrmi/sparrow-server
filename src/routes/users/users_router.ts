@@ -308,20 +308,20 @@ class UsersRouter extends Router
 
     private async getFollowing(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.userId !== "number" && typeof req.query.userId !== "string")
+        if(typeof req.query.userHandle !== "string")
         {
-            return this.error(res, new InvalidQueryResponse());
+            return this.error(res, new InvalidFormResponse());
         }
 
-        let offset = Number.MAX_SAFE_INTEGER;
-        if(typeof req.query.offset === "number" || typeof req.query.offset === "string")
+        let offset = 0;
+        if(req.query.offset !== undefined)
         {
             offset = Number(req.query.offset);
         }
 
         try
         {
-            var followers = await req.model.followsModel.getFollowing(req.session["userId"], Number(req.query.userId), offset);
+            var followers = await req.model.followsModel.getFollowing(req.session["userId"], String(req.query.userHandle), offset, req.model.usersModel);
         }
         catch(err)
         {
