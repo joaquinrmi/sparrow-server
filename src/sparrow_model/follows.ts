@@ -67,7 +67,7 @@ class FollowsModel extends BasicModel<FollowsDocument>
             FROM follows
             INNER JOIN users ON users.id = follows.target_id
             INNER JOIN profiles ON profiles.id = users.profile_id
-            WHERE follows.user_id = $1 AND follows.id < $2
+            WHERE follows.target_id = $1 AND follows.id < $2
             LIMIT 20;
         `;
 
