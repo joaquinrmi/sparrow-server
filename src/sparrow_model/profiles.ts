@@ -82,7 +82,45 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
     {
         try
         {
-            await this.pool.query(`UPDATE ${this.getTableName()} SET cheeps = cheeps + 1 FROM ${this.getTableName()} a INNER JOIN ${usersModel.getTableName()} b ON b.id = $1 AND a.id = b.profile_id`, [ userId ]);
+            var documents = await usersModel.find(
+                {
+                    props: [
+                        {
+                            id: userId
+                        }
+                    ]
+                },
+                [ "profile_id" ]
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(documents.length === 0)
+        {
+            return;
+        }
+
+        const profileId = documents[0].profile_id;
+
+        try
+        {
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: profileId
+                        }
+                    ]
+                },
+                {
+                    cheeps: {
+                        expression: "cheeps + 1"
+                    }
+                }
+            );
         }
         catch(err)
         {
