@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import UsersModel from "./users";
 import UserCellInfo from "./user_cell_info";
 
 export interface FollowsDocument extends BasicDocument
@@ -57,17 +58,42 @@ class FollowsModel extends BasicModel<FollowsDocument>
         }
     }
 
-    async getFollowers(currentUserId: number, userId: number, offset: number): Promise<{
+    async getFollowers(currentUserId: number, userHandle: string, offset: number, usersModel: UsersModel): Promise<{
         users: Array<UserCellInfo>,
         offset: number
     }>
     {
+        try
+        {
+            var documents = await usersModel.find(
+                {
+                    props: [
+                        {
+                            handle: userHandle
+                        }
+                    ]
+                },
+                [ "id" ]
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(documents.length === 0)
+        {
+            return null;
+        }
+
+        let userId = documents[0].id;
+
         const query = `
             SELECT follows.id, users.id AS user_id, users.handle, profiles.name, profiles.picture, profiles.description
             FROM follows
             INNER JOIN users ON users.id = follows.user_id
             INNER JOIN profiles ON profiles.id = users.profile_id
-            WHERE follows.target_id = $1 AND follows.id < $2
+            WHERE follows.target_id = $1 AND follows.id > $2
             LIMIT 20;
         `;
 
