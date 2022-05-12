@@ -378,7 +378,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 name: rowData.name,
                 picture: rowData.picture,
             },
-            dateCreated: rowData.date_created,
+            dateCreated: Number(rowData.date_created),
             quoteTarget: rowData.quote_target,
             content: rowData.content,
             gallery: rowData.gallery,
