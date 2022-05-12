@@ -142,6 +142,18 @@ class UsersModel extends BasicModel<UsersDocument>
 
     async follow(userId: number, targetId: number, followsModel: FollowsModel): Promise<boolean>
     {
+        if(await followsModel.exists({
+            props: [
+                {
+                    user_id: userId,
+                    target_id: targetId
+                }
+            ]
+        }))
+        {
+            return false;
+        }
+
         const updateProfileQuery = `
             UPDATE profiles
             SET profiles.following = profiles.following + 1
