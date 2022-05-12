@@ -139,7 +139,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return deleteCount > 0;
     }
 
-    async searchCheeps(words: Array<string>, maxTime: number, userHandle?: string): Promise<Array<CheepData>>
+    async searchCheeps(words: Array<string>, maxTime: number, responses: boolean, userHandle?: string): Promise<Array<CheepData>>
     {
         let values: Array<any> = [ maxTime ];
 
@@ -154,7 +154,12 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         whereConditions.push(`cheeps.date_created < $1`);
 
-        if(userHandle)
+        if(!responses)
+        {
+            whereConditions.push(`cheeps.response_target IS NULL`);
+        }
+
+        if(userHandle !== undefined)
         {
             whereConditions.push(`users.handle = $2`);
             values.push(userHandle);
