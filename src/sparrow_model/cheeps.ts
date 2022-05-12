@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import LikesModel from "./likes";
 import ProfilesModel from "./profiles";
 import UsersModel from "./users";
 
@@ -340,8 +341,29 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async registerNewLike(cheepId: number): Promise<void>
+    async registerNewLike(userId: number, cheepId: number, likesModel: LikesModel): Promise<void>
     {
+        try
+        {
+            var exists = await likesModel.exists({
+                props: [
+                    {
+                        user_id: userId,
+                        cheep_id: cheepId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(exists)
+        {
+            return;
+        }
+
         try
         {
             await this.update(
@@ -356,6 +378,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
                     likes: { expression: "likes + 1" }
                 }
             );
+
+            await likesModel.create({
+                user_id: userId,
+                cheep_id: cheepId
+            });
         }
         catch(err)
         {
