@@ -84,7 +84,7 @@ class CheepsRouter extends Router
 
         try
         {
-            var cheepData = await req.model.cheepsModel.getCheep(Number(req.query.cheepId));
+            var cheepData = await req.model.cheepsModel.getCheep(req.session["userId"], Number(req.query.cheepId));
         }
         catch(err)
         {
@@ -110,7 +110,7 @@ class CheepsRouter extends Router
 
         try
         {
-            var timeline = await req.model.cheepsModel.getTimeline(req.session["userId"], maxTime);
+            var timeline = await req.model.cheepsModel.getTimeline(req.session["userId"], req.session["userId"], maxTime);
         }
         catch(err)
         {
@@ -145,7 +145,7 @@ class CheepsRouter extends Router
 
         try
         {
-            var likedCheeps = await req.model.cheepsModel.getLikedCheeps(req.query.userHandle, maxTime);
+            var likedCheeps = await req.model.cheepsModel.getLikedCheeps(req.session["userId"], req.query.userHandle, maxTime);
         }
         catch(err)
         {
@@ -270,11 +270,11 @@ class CheepsRouter extends Router
         {
             if(likes)
             {
-                cheeps = await req.model.cheepsModel.getLikedCheeps(userHandle, maxTime);
+                cheeps = await req.model.cheepsModel.getLikedCheeps(req.session["userId"], userHandle, maxTime);
             }
             else
             {
-                cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, responses, onlyGallery, userHandle);
+                cheeps = await req.model.cheepsModel.searchCheeps(req.session["userId"], words, maxTime, responses, onlyGallery, userHandle);
             }
         }
         catch(err)
