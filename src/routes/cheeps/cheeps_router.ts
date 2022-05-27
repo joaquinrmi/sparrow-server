@@ -65,7 +65,8 @@ class CheepsRouter extends Router
                     gallery: gallery
                 },
                 req.model.usersModel,
-                req.model.profilesModel
+                req.model.profilesModel,
+                req.model.recheepsModel
             );
         }
         catch(err)
