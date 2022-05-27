@@ -63,10 +63,7 @@ class CheepsRouter extends Router
                     quote_target: req.newCheepForm.quoteTarget,
                     content: req.newCheepForm.content,
                     gallery: gallery
-                },
-                req.model.usersModel,
-                req.model.profilesModel,
-                req.model.recheepsModel
+                }
             );
         }
         catch(err)
@@ -148,7 +145,7 @@ class CheepsRouter extends Router
 
         try
         {
-            var likedCheeps = await req.model.cheepsModel.getLikedCheeps(req.query.userHandle, maxTime, req.model.usersModel);
+            var likedCheeps = await req.model.cheepsModel.getLikedCheeps(req.query.userHandle, maxTime);
         }
         catch(err)
         {
@@ -177,7 +174,7 @@ class CheepsRouter extends Router
 
         try
         {
-            await req.model.cheepsModel.registerNewLike(req.session["userId"], Number(req.query.cheepId), req.model.likesModel);
+            await req.model.cheepsModel.registerNewLike(req.session["userId"], Number(req.query.cheepId));
         }
         catch(err)
         {
@@ -273,7 +270,7 @@ class CheepsRouter extends Router
         {
             if(likes)
             {
-                cheeps = await req.model.cheepsModel.getLikedCheeps(userHandle, maxTime, req.model.usersModel);
+                cheeps = await req.model.cheepsModel.getLikedCheeps(userHandle, maxTime);
             }
             else
             {
