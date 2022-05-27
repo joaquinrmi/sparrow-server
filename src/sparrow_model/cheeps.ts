@@ -418,6 +418,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
             comments: rowData.comments,
             likes: rowData.likes,
             recheeps: rowData.recheeps,
+            withComments: rowData.with_comments,
             responseOf: responseOf
         };
     }
@@ -438,6 +439,7 @@ export interface CheepData
     comments: number;
     likes: number;
     recheeps: number;
+    withComments: number;
     responseOf?: CheepData;
 }
 
