@@ -154,7 +154,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return deleteCount > 0;
     }
 
-    async searchCheeps(words: Array<string>, maxTime: number, responses: boolean, onlyGallery: boolean, userHandle?: string): Promise<Array<CheepData>>
+    async searchCheeps(currentUserId: number, words: Array<string>, maxTime: number, responses: boolean, onlyGallery: boolean, userHandle?: string): Promise<Array<CheepData>>
     {
         let values: Array<any> = [ maxTime ];
 
@@ -204,13 +204,13 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         for(let i = 0; i < response.rowCount; ++i)
         {
-            result.push(await this.createCheepData(response.rows[i]));
+            result.push(await this.createCheepData(currentUserId, response.rows[i]));
         }
 
         return result;
     }
 
-    async getCheep(cheepId: number): Promise<CheepData>
+    async getCheep(currentUserId: number, cheepId: number): Promise<CheepData>
     {
         let query = `SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
             INNER JOIN users ON users.id = cheeps.author_id
@@ -231,10 +231,10 @@ class CheepsModel extends BasicModel<CheepsDocument>
             return null;
         }
 
-        return this.createCheepData(response.rows[0]);
+        return this.createCheepData(currentUserId, response.rows[0]);
     }
 
-    async getTimeline(userId: number, maxTime: number): Promise<Array<CheepData>>
+    async getTimeline(currentUserId: number, userId: number, maxTime: number): Promise<Array<CheepData>>
     {
         const query = `SELECT ${this.cheepDataColumns.join(", ")} FROM follows
             INNER JOIN cheeps ON cheeps.author_id = follows.target_id
@@ -256,13 +256,13 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         for(let i = 0; i < response.rowCount; ++i)
         {
-            result.push(await this.createCheepData(response.rows[i]));
+            result.push(await this.createCheepData(currentUserId, response.rows[i]));
         }
 
         return result;
     }
 
-    async getLikedCheeps(userHandle: string, maxTime: number): Promise<Array<CheepData>>
+    async getLikedCheeps(currentUserId: number, userHandle: string, maxTime: number): Promise<Array<CheepData>>
     {
         try
         {
@@ -303,7 +303,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         for(let i = 0; i < response.rowCount; ++i)
         {
-            result.push(await this.createCheepData(response.rows[i]));
+            result.push(await this.createCheepData(currentUserId, response.rows[i]));
         }
 
         return result;
@@ -486,12 +486,21 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    private async createCheepData(rowData: any): Promise<CheepData>
+    private async createCheepData(currentUserId: number, rowData: any): Promise<CheepData>
     {
         let responseOf: CheepData;
         if(rowData.response_target !== null)
         {
-            responseOf = await this.getCheep(rowData.response_target);
+            responseOf = await this.getCheep(currentUserId, rowData.response_target);
+        }
+
+        try
+        {
+            var userLikesIt = await this.checkLike(currentUserId, rowData.id);
+        }
+        catch(err)
+        {
+            throw err;
         }
 
         return {
@@ -509,7 +518,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
             likes: rowData.likes,
             recheeps: rowData.recheeps,
             quotes: rowData.quotes,
-            responseOf: responseOf
+            responseOf: responseOf,
+            userLikesIt: userLikesIt
         };
     }
 }
@@ -531,6 +541,7 @@ export interface CheepData
     recheeps: number;
     quotes: number;
     responseOf?: CheepData;
+    userLikesIt: boolean;
 }
 
 export default CheepsModel;
