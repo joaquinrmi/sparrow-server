@@ -5,6 +5,7 @@ import CheepsModel from "./cheeps";
 import FollowsModel from "./follows";
 import LikesModel from "./likes";
 import SessionsModel from "./sessions";
+import RecheepsModel from "./recheeps";
 
 class SparrowModel
 {
@@ -13,6 +14,7 @@ class SparrowModel
     cheepsModel: CheepsModel;
     followsModel: FollowsModel;
     likesModel: LikesModel;
+    recheepsModel: RecheepsModel;
     sessionsModel: SessionsModel;
     
     private pool: Pool;
@@ -26,6 +28,7 @@ class SparrowModel
         this.cheepsModel = new CheepsModel(this.pool);
         this.followsModel = new FollowsModel(this.pool);
         this.likesModel = new LikesModel(this.pool);
+        this.recheepsModel = new RecheepsModel(this.pool);
         this.sessionsModel = new SessionsModel(this.pool);
     }
 
@@ -38,6 +41,7 @@ class SparrowModel
             await this.cheepsModel.initialize();
             await this.followsModel.initialize();
             await this.likesModel.initialize();
+            await this.recheepsModel.initialize();
             await this.sessionsModel.initialize();
         }
         catch(err)
