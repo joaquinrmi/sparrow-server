@@ -503,6 +503,15 @@ class CheepsModel extends BasicModel<CheepsDocument>
             throw err;
         }
 
+        try
+        {
+            var userRecheeppedIt = await this.checkRecheep(currentUserId, rowData.id);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
         return {
             id: rowData.id,
             author: {
@@ -519,7 +528,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
             recheeps: rowData.recheeps,
             quotes: rowData.quotes,
             responseOf: responseOf,
-            userLikesIt: userLikesIt
+            userLikesIt: userLikesIt,
+            userRecheeppedIt: userRecheeppedIt
         };
     }
 }
@@ -542,6 +552,7 @@ export interface CheepData
     quotes: number;
     responseOf?: CheepData;
     userLikesIt: boolean;
+    userRecheeppedIt: boolean;
 }
 
 export default CheepsModel;
