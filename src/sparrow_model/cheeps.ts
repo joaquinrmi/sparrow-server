@@ -2,11 +2,7 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
-import LikesModel from "./likes";
-import ProfilesModel from "./profiles";
-import RecheepsModel from "./recheeps";
 import SparrowModel from "./sparrow_model";
-import UsersModel from "./users";
 
 export interface CheepsDocument extends BasicDocument
 {
@@ -105,12 +101,12 @@ class CheepsModel extends BasicModel<CheepsDocument>
         this.model = sparrowModel;
     }
 
-    async cheep(data: CheepsDocument, usersModel: UsersModel, profilesModel: ProfilesModel, recheepsModel: RecheepsModel): Promise<CheepsDocument>
+    async cheep(data: CheepsDocument): Promise<CheepsDocument>
     {
         try
         {
             var cheepDocument = await this.create(data);
-            await profilesModel.registerNewCheep(data.author_id, usersModel);
+            await this.model.profilesModel.registerNewCheep(data.author_id, this.model.usersModel);
         }
         catch(err)
         {
@@ -126,7 +122,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         {
             if(cheepDocument.content === null)
             {
-                this.registerNewRecheep(data.author_id, cheepDocument.quote_target, recheepsModel);
+                this.registerNewRecheep(data.author_id, cheepDocument.quote_target);
             }
             else
             {
@@ -266,11 +262,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return result;
     }
 
-    async getLikedCheeps(userHandle: string, maxTime: number, usersModel: UsersModel): Promise<Array<CheepData>>
+    async getLikedCheeps(userHandle: string, maxTime: number): Promise<Array<CheepData>>
     {
         try
         {
-            var userDocuments = await usersModel.find(
+            var userDocuments = await this.model.usersModel.find(
                 { props: [ { handle: userHandle } ]},
                 [ "id" ]
             );
@@ -336,11 +332,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async registerNewRecheep(userId: number, cheepId: number, recheepsModel: RecheepsModel): Promise<void>
+    async registerNewRecheep(userId: number, cheepId: number): Promise<void>
     {
         try
         {
-            var exists = await recheepsModel.exists({
+            var exists = await this.model.recheepsModel.exists({
                 props: [
                     {
                         user_id: userId,
@@ -403,11 +399,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async registerNewLike(userId: number, cheepId: number, likesModel: LikesModel): Promise<void>
+    async registerNewLike(userId: number, cheepId: number): Promise<void>
     {
         try
         {
-            var exists = await likesModel.exists({
+            var exists = await this.model.likesModel.exists({
                 props: [
                     {
                         user_id: userId,
@@ -441,7 +437,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 }
             );
 
-            await likesModel.create({
+            await this.model.likesModel.create({
                 user_id: userId,
                 cheep_id: cheepId
             });
@@ -452,11 +448,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    private async checkLike(userId: number, cheepId: number, likesModel: LikesModel): Promise<boolean>
+    private async checkLike(userId: number, cheepId: number): Promise<boolean>
     {
         try
         {
-            return await likesModel.exists({
+            return await this.model.likesModel.exists({
                 props: [
                     {
                         user_id: userId,
@@ -471,11 +467,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    private async checkRecheep(userId: number, cheepId: number, recheepsModel: RecheepsModel): Promise<boolean>
+    private async checkRecheep(userId: number, cheepId: number): Promise<boolean>
     {
         try
         {
-            return await recheepsModel.exists({
+            return await this.model.recheepsModel.exists({
                 props: [
                     {
                         user_id: userId,
