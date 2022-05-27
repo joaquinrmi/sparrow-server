@@ -4,6 +4,7 @@ import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 import LikesModel from "./likes";
 import ProfilesModel from "./profiles";
+import RecheepsModel from "./recheeps";
 import UsersModel from "./users";
 
 export interface CheepsDocument extends BasicDocument
@@ -100,7 +101,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         ];
     }
 
-    async cheep(data: CheepsDocument, usersModel: UsersModel, profilesModel: ProfilesModel): Promise<CheepsDocument>
+    async cheep(data: CheepsDocument, usersModel: UsersModel, profilesModel: ProfilesModel, recheepsModel: RecheepsModel): Promise<CheepsDocument>
     {
         try
         {
@@ -121,7 +122,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         {
             if(cheepDocument.content === null)
             {
-                this.registerNewRecheep(cheepDocument.quote_target);
+                this.registerNewRecheep(data.author_id, cheepDocument.quote_target, recheepsModel);
             }
             else
             {
@@ -331,8 +332,29 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async registerNewRecheep(cheepId: number): Promise<void>
+    async registerNewRecheep(userId: number, cheepId: number, recheepsModel: RecheepsModel): Promise<void>
     {
+        try
+        {
+            var exists = await recheepsModel.exists({
+                props: [
+                    {
+                        user_id: userId,
+                        cheep_id: cheepId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(exists)
+        {
+            return;
+        }
+
         try
         {
             await this.update(
