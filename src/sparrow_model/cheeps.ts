@@ -17,6 +17,7 @@ export interface CheepsDocument extends BasicDocument
     gallery?: Array<string>;
     comments?: number;
     recheeps?: number;
+    with_comments?: number;
     likes?: number;
 }
 
@@ -64,6 +65,11 @@ const cheepsSchema = new Schema<CheepsDocument>("cheeps",
         default: 0
     },
     recheeps: {
+        type: "int",
+        notNull: true,
+        default: 0
+    },
+    with_comments: {
         type: "int",
         notNull: true,
         default: 0
