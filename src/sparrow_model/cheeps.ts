@@ -119,7 +119,14 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         if(cheepDocument.quote_target !== null)
         {
-            this.registerNewRecheep(cheepDocument.quote_target);
+            if(cheepDocument.content === null)
+            {
+                this.registerNewRecheep(cheepDocument.quote_target);
+            }
+            else
+            {
+                this.registerNewQuote(cheepDocument.quote_target);
+            }
         }
 
         return cheepDocument;
