@@ -347,6 +347,29 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
+    async registerNewQuote(cheepId: number): Promise<void>
+    {
+        try
+        {
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: cheepId
+                        }
+                    ]
+                },
+                {
+                    quotes: { expression: "quotes + 1" }
+                }
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
     async registerNewLike(userId: number, cheepId: number, likesModel: LikesModel): Promise<void>
     {
         try
