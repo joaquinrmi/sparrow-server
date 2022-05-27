@@ -4,6 +4,7 @@ import { CannotDeleteCheepResponse, CheepDoesNotExistResponse, InternalServerErr
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
+import { CheepData } from "../../sparrow_model/cheeps";
 
 class CheepsRouter extends Router
 {
@@ -248,6 +249,12 @@ class CheepsRouter extends Router
             userHandle = req.query.userHandle;
         }
 
+        let likes = false;
+        if(req.query.likes !== undefined)
+        {
+            likes = Boolean(req.query.likes);
+        }
+
         let responses = true;
         if(req.query.responses !== undefined)
         {
@@ -260,9 +267,17 @@ class CheepsRouter extends Router
             onlyGallery = Boolean(req.query.onlyGallery);
         }
 
+        let cheeps: Array<CheepData>;
         try
         {
-            var cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, responses, onlyGallery, userHandle);
+            if(likes)
+            {
+                cheeps = await req.model.cheepsModel.getLikedCheeps(userHandle, maxTime, req.model.usersModel);
+            }
+            else
+            {
+                cheeps = await req.model.cheepsModel.searchCheeps(words, maxTime, responses, onlyGallery, userHandle);
+            }
         }
         catch(err)
         {
