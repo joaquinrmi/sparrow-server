@@ -452,7 +452,26 @@ class CheepsModel extends BasicModel<CheepsDocument>
     {
         try
         {
-            return likesModel.exists({
+            return await likesModel.exists({
+                props: [
+                    {
+                        user_id: userId,
+                        cheep_id: cheepId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
+    private async checkRecheep(userId: number, cheepId: number, recheepsModel: RecheepsModel): Promise<boolean>
+    {
+        try
+        {
+            return await recheepsModel.exists({
                 props: [
                     {
                         user_id: userId,
