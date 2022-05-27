@@ -5,6 +5,7 @@ import Schema from "../model/schema/schema";
 import LikesModel from "./likes";
 import ProfilesModel from "./profiles";
 import RecheepsModel from "./recheeps";
+import SparrowModel from "./sparrow_model";
 import UsersModel from "./users";
 
 export interface CheepsDocument extends BasicDocument
@@ -85,8 +86,9 @@ const cheepsSchema = new Schema<CheepsDocument>("cheeps",
 class CheepsModel extends BasicModel<CheepsDocument>
 {
     private cheepDataColumns: Array<string>;
+    private model: SparrowModel;
 
-    constructor(pool: Pool)
+    constructor(pool: Pool, sparrowModel: SparrowModel)
     {
         super(cheepsSchema, pool);
 
@@ -99,6 +101,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
             ...userColumns,
             ...profileColumns
         ];
+
+        this.model = sparrowModel;
     }
 
     async cheep(data: CheepsDocument, usersModel: UsersModel, profilesModel: ProfilesModel, recheepsModel: RecheepsModel): Promise<CheepsDocument>
