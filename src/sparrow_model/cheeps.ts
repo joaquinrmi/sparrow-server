@@ -448,6 +448,25 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
+    private async checkLike(userId: number, cheepId: number, likesModel: LikesModel): Promise<boolean>
+    {
+        try
+        {
+            return likesModel.exists({
+                props: [
+                    {
+                        user_id: userId,
+                        cheep_id: cheepId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
     private async createCheepData(rowData: any): Promise<CheepData>
     {
         let responseOf: CheepData;
