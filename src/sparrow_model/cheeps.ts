@@ -17,7 +17,7 @@ export interface CheepsDocument extends BasicDocument
     gallery?: Array<string>;
     comments?: number;
     recheeps?: number;
-    with_comments?: number;
+    quotes?: number;
     likes?: number;
 }
 
@@ -69,7 +69,7 @@ const cheepsSchema = new Schema<CheepsDocument>("cheeps",
         notNull: true,
         default: 0
     },
-    with_comments: {
+    quotes: {
         type: "int",
         notNull: true,
         default: 0
@@ -418,7 +418,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
             comments: rowData.comments,
             likes: rowData.likes,
             recheeps: rowData.recheeps,
-            withComments: rowData.with_comments,
+            quotes: rowData.quotes,
             responseOf: responseOf
         };
     }
@@ -439,7 +439,7 @@ export interface CheepData
     comments: number;
     likes: number;
     recheeps: number;
-    withComments: number;
+    quotes: number;
     responseOf?: CheepData;
 }
 
