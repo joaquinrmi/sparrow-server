@@ -73,7 +73,7 @@ class Sparrow
         this.app.use("/api/upload", this.uploadRouter.use());
 
         this.app.get("*", (req : Request, res : Response) => {
-            res.sendFile(path.join(__dirname, "..", "res", "index.html"));
+            res.sendFile(path.join(__dirname, "..", "res", "build", "index.html"));
         });
 
         this.app.listen(process.env.PORT, () =>
