@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import multer from "multer";
 import SparrowModel from "./sparrow_model/";
+import cors from "cors";
 
 import UsersRouter from "./routes/users/";
 import ProfilesRouter from "./routes/profiles/";
@@ -47,6 +48,16 @@ class Sparrow
         catch(err)
         {
             throw err;
+        }
+
+        if(process.env.NODE_ENV === "development")
+        {
+            this.app.use(cors({
+                origin: [
+                   "http://localhost:3000"
+                ],
+                credentials: true
+            }));
         }
 
         this.app.use(express.json());
