@@ -3,7 +3,7 @@ import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 import randomWord from "../random_word";
-import { encrypt } from "../encryption";
+import { encrypt, decrypt } from "../encryption";
 
 export interface SessionsDocument extends BasicDocument
 {
@@ -52,7 +52,7 @@ class SessionsModel extends BasicModel<SessionsDocument>
         {
             await this.create({
                 user_id: userId,
-                key: encrypt(key),
+                key: key,
                 date: new Date().getTime()
             });
         }
@@ -61,7 +61,7 @@ class SessionsModel extends BasicModel<SessionsDocument>
             throw err;
         }
 
-        return key;
+        return encrypt(key);
     }
 
     async checkSession(userId: number, sessionKey: string): Promise<boolean>
@@ -72,7 +72,7 @@ class SessionsModel extends BasicModel<SessionsDocument>
                 props: [
                     {
                         user_id: userId,
-                        key: encrypt(sessionKey)
+                        key: decrypt(sessionKey)
                     }
                 ]
             });
@@ -91,7 +91,7 @@ class SessionsModel extends BasicModel<SessionsDocument>
                 props: [
                     {
                         user_id: userId,
-                        key: encrypt(key)
+                        key: decrypt(key)
                     }
                 ]
             });
