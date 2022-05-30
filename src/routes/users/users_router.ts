@@ -14,6 +14,7 @@ class UsersRouter extends Router
         super([
             new RouteMap(MethodType.Post, "/create", "createNewUser"),
             new RouteMap(MethodType.Post, "/login", "login"),
+            new RouteMap(MethodType.Post, "/restore-session", "restoreSession"),
             new RouteMap(MethodType.Post, "/logout", "logout"),
             new RouteMap(MethodType.Get, "/user-info", "getUserInformation"),
             new RouteMap(MethodType.Post, "/follow", "followUser"),
@@ -24,6 +25,7 @@ class UsersRouter extends Router
 
         this.registerFunction("createNewUser", this.createNewUser);
         this.registerFunction("login", this.login);
+        this.registerFunction("restoreSession", this.restoreSession);
         this.registerFunction("logout", this.logout);
         this.registerFunction("getUserInformation", this.getUserInformation);
         this.registerFunction("followUser", this.followUser);
@@ -186,6 +188,63 @@ class UsersRouter extends Router
             name: profile.name,
             picture: profile.picture
         });
+    }
+
+    private async restoreSession(req: Request, res: Response): Promise<any>
+    {
+        if(typeof req.cookies["session"] === "object")
+        {
+            const userId = req.cookies["session"].id;
+            const sessionKey = req.cookies["session"].key;
+
+            try
+            {
+                var exists = await req.model.sessionsModel.checkSession(userId, sessionKey);
+            }
+            catch(err)
+            {
+                console.log(err);
+                return this.error(res, new InternalServerErrorResponse());
+            }
+
+            if(!exists)
+            {
+                return res.status(StatusCode.Unauthorized).json();
+            }
+
+            try
+            {
+                var userShortInformation = await req.model.usersModel.getShortInformation(userId, req.model.profilesModel);
+            }
+            catch(err)
+            {
+                console.log(err);
+                return this.error(res, new InternalServerErrorResponse());
+            }
+
+            if(userShortInformation === null)
+            {
+                return res.status(StatusCode.Unauthorized).json();
+            }
+
+            res.cookie(
+                "session",
+                JSON.stringify({
+                    id: userId,
+                    key: sessionKey
+                }),
+                {
+                    maxAge: 30 * 24 * 60 * 60 * 1000
+                }
+            );
+
+            req.session["userId"] = userId;
+            req.session.save();
+
+            res.status(StatusCode.OK).json(userShortInformation);
+        }
+
+        res.status(StatusCode.Unauthorized).json();
     }
 
     private async logout(req: Request, res: Response): Promise<any>
