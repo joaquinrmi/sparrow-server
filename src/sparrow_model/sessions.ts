@@ -64,6 +64,25 @@ class SessionsModel extends BasicModel<SessionsDocument>
         return key;
     }
 
+    async checkSession(userId: number, sessionKey: string): Promise<boolean>
+    {
+        try
+        {
+            return this.exists({
+                props: [
+                    {
+                        user_id: userId,
+                        key: encrypt(sessionKey)
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
     async unregisterSession(userId: number, key: string): Promise<void>
     {
         try
