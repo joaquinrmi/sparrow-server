@@ -192,10 +192,12 @@ class UsersRouter extends Router
 
     private async restoreSession(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.cookies["session"] === "object")
+        if(req.cookies["session"])
         {
-            const userId = req.cookies["session"].id;
-            const sessionKey = req.cookies["session"].key;
+            const cookie = JSON.parse(req.cookies["session"]);
+
+            const userId = cookie.id;
+            const sessionKey = cookie.key;
 
             try
             {
