@@ -67,6 +67,7 @@ class ProfilesRouter extends Router
             name: profileDocument.name,
             picture: profileDocument.picture,
             banner: profileDocument.banner,
+            description: profileDocument.description,
             joinDate: Number(profileDocument.join_date),
             birthdate: profileDocument.birthdate !== null ? Number(profileDocument.birthdate) : null,
             location: profileDocument.location,
