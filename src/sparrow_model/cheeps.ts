@@ -189,7 +189,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
             INNER JOIN users ON users.id = cheeps.author_id
             INNER JOIN profiles ON profiles.id = users.profile_id
             WHERE ${whereConditions.join(" AND ")}
-            ORDER BY users.date_created DESC LIMIT 20;`;
+            ORDER BY cheeps.date_created DESC LIMIT 20;`;
 
         try
         {
