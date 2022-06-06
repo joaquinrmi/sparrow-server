@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import multer from "multer";
 import SparrowModel from "./sparrow_model/";
 import cors from "cors";
+import { v2 as cloudinary } from "cloudinary";
 
 import UsersRouter from "./routes/users/";
 import ProfilesRouter from "./routes/profiles/";
@@ -59,6 +60,12 @@ class Sparrow
                 credentials: true
             }));
         }
+
+        cloudinary.config({
+            cloud_name: process.env.CLOUD_NAME,
+            api_key: process.env.CLOUD_API_KEY,
+            api_secret: process.env.CLOUD_API_SECRET
+        });
 
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: false }));
