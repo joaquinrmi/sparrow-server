@@ -207,42 +207,42 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return deleteCount > 0;
     }
 
-    async searchCheeps(currentUserId: number, words: Array<string>, maxTime: number, responses: boolean, onlyGallery: boolean, responseOf: number, userHandle?: string): Promise<Array<CheepData>>
+    async searchCheeps(currentUserId: number, parameters: SearchCheepsParameters): Promise<Array<CheepData>>
     {
         let values: Array<any> = [];
 
         let whereConditions = new Array<string>();
-        if(words.length > 0)
+        if(parameters.words.length > 0)
         {
-            whereConditions.push(words.map((word) =>
+            whereConditions.push(parameters.words.map((word) =>
             {
                 return `cheeps.content LIKE '%${word}%'`;
             }).join(" AND "));
         }
 
         whereConditions.push(`cheeps.date_created < $${values.length + 1}`);
-        values.push(maxTime);
+        values.push(parameters.maxTime);
 
-        if(!responses)
+        if(!parameters.responses)
         {
             whereConditions.push(`cheeps.response_target IS NULL`);
         }
 
-        if(onlyGallery)
+        if(parameters.onlyGallery)
         {
             whereConditions.push(`cheeps.gallery IS NOT NULL`);
         }
 
-        if(responseOf !== -1)
+        if(parameters.responseOf !== -1)
         {
             whereConditions.push(`cheeps.response_target = $${values.length + 1}`);
-            values.push(responseOf);
+            values.push(parameters.responseOf);
         }
 
-        if(userHandle !== undefined)
+        if(parameters.userHandle !== undefined)
         {
             whereConditions.push(`users.handle = $${values.length + 1}`);
-            values.push(userHandle);
+            values.push(parameters.userHandle);
         }
 
         let query = `SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
@@ -745,6 +745,16 @@ export interface CheepData
     responseOf?: CheepData;
     userLikesIt: boolean;
     userRecheeppedIt: boolean;
+}
+
+export interface SearchCheepsParameters
+{
+    words: Array<string>;
+    maxTime: number;
+    responses: boolean;
+    onlyGallery: boolean;
+    responseOf: number;
+    userHandle?: string;
 }
 
 export default CheepsModel;
