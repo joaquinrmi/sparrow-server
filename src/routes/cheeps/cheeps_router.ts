@@ -287,6 +287,12 @@ class CheepsRouter extends Router
             onlyGallery = Boolean(req.query.onlyGallery);
         }
 
+        let responseOf = -1;
+        if(req.query.responseOf !== undefined)
+        {
+            responseOf = Number(req.query.responseOf);
+        }
+
         let cheeps: Array<CheepData>;
         try
         {
@@ -296,7 +302,7 @@ class CheepsRouter extends Router
             }
             else
             {
-                cheeps = await req.model.cheepsModel.searchCheeps(req.session["userId"], words, maxTime, responses, onlyGallery, userHandle);
+                cheeps = await req.model.cheepsModel.searchCheeps(req.session["userId"], words, maxTime, responses, onlyGallery, responseOf, userHandle);
             }
         }
         catch(err)
