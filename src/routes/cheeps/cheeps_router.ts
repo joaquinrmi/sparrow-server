@@ -16,6 +16,7 @@ class CheepsRouter extends Router
             new RouteMap(MethodType.Get, "/timeline", "getTimeline"),
             new RouteMap(MethodType.Get, "/liked-list", "getLikedCheeps"),
             new RouteMap(MethodType.Post, "/like", "likeCheep"),
+            new RouteMap(MethodType.Post, "/unlike", "unlikeCheep"),
             new RouteMap(MethodType.Post, "/delete", "deleteCheep"),
             new RouteMap(MethodType.Get, "/search", "searchCheeps")
         ]);
@@ -25,10 +26,11 @@ class CheepsRouter extends Router
         this.registerFunction("getTimeline", this.getTimeline);
         this.registerFunction("getLikedCheeps", this.getLikedCheeps);
         this.registerFunction("likeCheep", this.likeCheep);
+        this.registerFunction("unlikeCheep", this.unlikeCheep);
         this.registerFunction("deleteCheep", this.deleteCheep);
         this.registerFunction("searchCheeps", this.searchCheeps);
 
-        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/delete", "/search" ]);
+        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/unlike", "/delete", "/search" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
@@ -175,6 +177,26 @@ class CheepsRouter extends Router
         try
         {
             await req.model.cheepsModel.registerNewLike(req.session["userId"], Number(req.query.cheepId));
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json();
+    }
+
+    private async unlikeCheep(req: Request, res: Response): Promise<any>
+    {
+        if(req.query.cheepId === undefined)
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            await req.model.cheepsModel.deleteLike(req.session["userId"], Number(req.query.cheepId));
         }
         catch(err)
         {
