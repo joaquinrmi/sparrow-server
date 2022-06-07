@@ -161,7 +161,14 @@ class CheepsModel extends BasicModel<CheepsDocument>
         {
             try
             {
-                await this.unregisterQuote(cheepDocument.quote_target);
+                if(cheepDocument.content)
+                {
+                    await this.unregisterQuote(cheepDocument.quote_target);
+                }
+                else
+                {
+                    await this.unregisterRecheep(cheepDocument.author_id, cheepDocument.quote_target);
+                }
             }
             catch(err)
             {
@@ -436,6 +443,50 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     recheeps: { expression: "recheeps + 1" }
+                }
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
+    async unregisterRecheep(userId: number, cheepId: number): Promise<void>
+    {
+        try
+        {
+            var deleteCount = await this.model.recheepsModel.delete({
+                props: [
+                    {
+                        user_id: userId,
+                        cheep_id: cheepId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(deleteCount === 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: cheepId
+                        }
+                    ]
+                },
+                {
+                    recheeps: { expression: "recheeps . 1" }
                 }
             );
         }
