@@ -169,6 +169,18 @@ class CheepsModel extends BasicModel<CheepsDocument>
             }
         }
 
+        if(cheepDocument.response_target)
+        {
+            try
+            {
+                await this.unregisterComment(cheepDocument.response_target);
+            }
+            catch(err)
+            {
+                throw err;
+            }
+        }
+
         try
         {
             var deleteCount = await this.delete({
@@ -357,6 +369,29 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     comments: { expression: "comments + 1" }
+                }
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
+    async unregisterComment(cheepId: number): Promise<void>
+    {
+        try
+        {
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: cheepId
+                        }
+                    ]
+                },
+                {
+                    comments: { expression: "comments - 1" }
                 }
             );
         }
