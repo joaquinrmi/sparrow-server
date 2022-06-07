@@ -207,9 +207,9 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return deleteCount > 0;
     }
 
-    async searchCheeps(currentUserId: number, words: Array<string>, maxTime: number, responses: boolean, onlyGallery: boolean, userHandle?: string): Promise<Array<CheepData>>
+    async searchCheeps(currentUserId: number, words: Array<string>, maxTime: number, responses: boolean, onlyGallery: boolean, responseOf: number, userHandle?: string): Promise<Array<CheepData>>
     {
-        let values: Array<any> = [ maxTime ];
+        let values: Array<any> = [];
 
         let whereConditions = new Array<string>();
         if(words.length > 0)
@@ -220,7 +220,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
             }).join(" AND "));
         }
 
-        whereConditions.push(`cheeps.date_created < $1`);
+        whereConditions.push(`cheeps.date_created < $${values.length + 1}`);
+        values.push(maxTime);
 
         if(!responses)
         {
@@ -232,9 +233,15 @@ class CheepsModel extends BasicModel<CheepsDocument>
             whereConditions.push(`cheeps.gallery IS NOT NULL`);
         }
 
+        if(responseOf !== -1)
+        {
+            whereConditions.push(`cheeps.response_target = $${values.length + 1}`);
+            values.push(responseOf);
+        }
+
         if(userHandle !== undefined)
         {
-            whereConditions.push(`users.handle = $2`);
+            whereConditions.push(`users.handle = $${values.length + 1}`);
             values.push(userHandle);
         }
 
