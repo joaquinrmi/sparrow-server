@@ -4,7 +4,7 @@ import { CannotDeleteCheepResponse, CheepDoesNotExistResponse, InternalServerErr
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
-import { CheepData } from "../../sparrow_model/cheeps";
+import { CheepData, SearchCheepsParameters } from "../../sparrow_model/cheeps";
 
 class CheepsRouter extends Router
 {
@@ -236,7 +236,14 @@ class CheepsRouter extends Router
 
     private async searchCheeps(req: Request, res: Response): Promise<any>
     {
-        let words = new Array<string>();
+        const searchCheepsParameters: SearchCheepsParameters = {
+            words: [],
+            maxTime: new Date().getTime(),
+            responses: true,
+            onlyGallery: false,
+            responseOf: -1
+        };
+
         if(req.query.words !== undefined)
         {
             if(typeof req.query.words !== "string")
@@ -244,10 +251,9 @@ class CheepsRouter extends Router
                 return this.error(res, new InvalidQueryResponse());
             }
 
-            words = (req.query.words as string).split(" ");
+            searchCheepsParameters.words = (req.query.words as string).split(" ");
         }
 
-        let maxTime = new Date().getTime();
         if(req.query.maxTime !== undefined)
         {
             if(typeof req.query.maxTime !== "number")
@@ -255,10 +261,9 @@ class CheepsRouter extends Router
                 return this.error(res, new InvalidQueryResponse());
             }
 
-            maxTime = req.query.maxTime;
+            searchCheepsParameters.maxTime = req.query.maxTime;
         }
 
-        let userHandle: string;
         if(req.query.userHandle !== undefined)
         {
             if(typeof req.query.userHandle !== "string")
@@ -266,7 +271,7 @@ class CheepsRouter extends Router
                 return this.error(res, new InvalidQueryResponse());
             }
 
-            userHandle = req.query.userHandle;
+            searchCheepsParameters.userHandle = req.query.userHandle;
         }
 
         let likes = false;
@@ -275,22 +280,19 @@ class CheepsRouter extends Router
             likes = Boolean(req.query.likes);
         }
 
-        let responses = true;
         if(req.query.responses !== undefined)
         {
-            responses = Boolean(req.query.responses);
+            searchCheepsParameters.responses = Boolean(req.query.responses);
         }
 
-        let onlyGallery = false;
         if(req.query.onlyGallery !== undefined)
         {
-            onlyGallery = Boolean(req.query.onlyGallery);
+            searchCheepsParameters.onlyGallery = Boolean(req.query.onlyGallery);
         }
 
-        let responseOf = -1;
         if(req.query.responseOf !== undefined)
         {
-            responseOf = Number(req.query.responseOf);
+            searchCheepsParameters.responseOf = Number(req.query.responseOf);
         }
 
         let cheeps: Array<CheepData>;
@@ -298,11 +300,11 @@ class CheepsRouter extends Router
         {
             if(likes)
             {
-                cheeps = await req.model.cheepsModel.getLikedCheeps(req.session["userId"], userHandle, maxTime);
+                cheeps = await req.model.cheepsModel.getLikedCheeps(req.session["userId"], searchCheepsParameters.userHandle, searchCheepsParameters.maxTime);
             }
             else
             {
-                cheeps = await req.model.cheepsModel.searchCheeps(req.session["userId"], words, maxTime, responses, onlyGallery, responseOf, userHandle);
+                cheeps = await req.model.cheepsModel.searchCheeps(req.session["userId"], searchCheepsParameters);
             }
         }
         catch(err)
@@ -311,7 +313,7 @@ class CheepsRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        let nextTime = maxTime;
+        let nextTime = searchCheepsParameters.maxTime;
         if(cheeps.length > 0)
         {
             nextTime = cheeps[cheeps.length - 1].dateCreated;
