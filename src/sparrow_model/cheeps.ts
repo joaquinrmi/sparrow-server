@@ -448,6 +448,48 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
+    async deleteLike(userId: number, cheepId: number): Promise<void>
+    {
+        try
+        {
+            var deleteCount = await this.model.likesModel.delete({
+                props: [
+                    {
+                        user_id: userId,
+                        cheep_id: cheepId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        if(deleteCount > 0)
+        {
+            try
+            {
+                await this.update(
+                    {
+                        props: [
+                            {
+                                id: cheepId
+                            }
+                        ]
+                    },
+                    {
+                        likes: { expression: "likes - 1" }
+                    }
+                );
+            }
+            catch(err)
+            {
+                throw err;
+            }
+        }
+    }
+
     private async checkLike(userId: number, cheepId: number): Promise<boolean>
     {
         try
