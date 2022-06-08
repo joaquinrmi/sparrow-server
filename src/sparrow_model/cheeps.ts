@@ -686,6 +686,12 @@ class CheepsModel extends BasicModel<CheepsDocument>
             responseOf = await this.getCheep(currentUserId, rowData.response_target);
         }
 
+        let quoteTarget: CheepData;
+        if(rowData.quote_target !== null)
+        {
+            quoteTarget = await this.getCheep(currentUserId, rowData.quote_target);
+        }
+
         try
         {
             var userLikesIt = await this.checkLike(currentUserId, rowData.id);
@@ -712,7 +718,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 picture: rowData.picture,
             },
             dateCreated: Number(rowData.date_created),
-            quoteTarget: rowData.quote_target,
+            quoteTarget: quoteTarget,
             content: rowData.content,
             gallery: rowData.gallery,
             comments: rowData.comments,
@@ -735,7 +741,7 @@ export interface CheepData
         picture: string;
     };
     dateCreated: number;
-    quoteTarget: number;
+    quoteTarget: CheepData;
     content: string;
     gallery: Array<string>;
     comments: number;
