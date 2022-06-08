@@ -120,7 +120,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         if(cheepDocument.quote_target !== null)
         {
-            if(cheepDocument.content === null)
+            if(cheepDocument.content === null || cheepDocument.content === undefined)
             {
                 this.registerNewRecheep(data.author_id, cheepDocument.quote_target);
             }
@@ -452,6 +452,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
                     recheeps: { expression: "recheeps + 1" }
                 }
             );
+
+            await this.model.recheepsModel.create({
+                user_id: userId,
+                cheep_id: cheepId
+            });
         }
         catch(err)
         {
