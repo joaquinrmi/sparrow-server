@@ -74,6 +74,11 @@ class CheepsRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
+        if(cheepDocument === null)
+        {
+            return res.status(StatusCode.OK).json();
+        }
+
         res.status(StatusCode.Created).json(cheepDocument.id);
     }
 
