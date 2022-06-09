@@ -160,11 +160,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         const cheepDocument = cheeps[0];
 
-        if(cheepDocument.quote_target)
+        if(cheepDocument.quote_target !== null)
         {
             try
             {
-                if(cheepDocument.content)
+                if(cheepDocument.content !== null || cheepDocument.gallery !== null)
                 {
                     await this.unregisterQuote(cheepDocument.quote_target);
                 }
@@ -179,7 +179,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
             }
         }
 
-        if(cheepDocument.response_target)
+        if(cheepDocument.response_target !== null)
         {
             try
             {
@@ -503,7 +503,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
                     ]
                 },
                 {
-                    recheeps: { expression: "recheeps . 1" }
+                    recheeps: { expression: "recheeps - 1" }
                 }
             );
         }
