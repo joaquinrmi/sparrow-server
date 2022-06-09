@@ -103,9 +103,9 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
     async cheep(data: CheepsDocument): Promise<CheepsDocument | null>
     {
-        if(data.quote_target !== null)
+        if(data.quote_target !== undefined)
         {
-            if(data.content === null || data.content === undefined)
+            if(data.content === undefined && data.gallery === undefined)
             {
                 if(!(await this.registerNewRecheep(data.author_id, data.quote_target)))
                 {
