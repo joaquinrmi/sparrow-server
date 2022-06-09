@@ -1,5 +1,7 @@
 import { Pool } from "pg";
 import { decrypt, encrypt } from "../encryption";
+import path from "path";
+import ImageKeeper from "../image_keeper";
 import BasicDocument, { DocumentAttributes } from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
@@ -56,6 +58,49 @@ class UsersModel extends BasicModel<UsersDocument>
         super(usersSchema, pool);
 
         this.model = model;
+    }
+
+    async createNewUser(profileData: DocumentAttributes<ProfilesDocument>, userData: DocumentAttributes<UsersDocument>): Promise<UsersDocument>
+    {
+        try
+        {
+            var profileDocument = await this.model.profilesModel.create({
+                name: profileData.name,
+                birthdate: profileData.birthdate,
+                picture: "",
+                join_date: new Date().getTime()
+            });
+
+            var userDocument = await this.create({
+                handle: userData.handle,
+                email: userData.email,
+                password: encrypt(userData.password),
+                profile_id: profileDocument.id
+            });
+
+            const imageKeeper = new ImageKeeper(userDocument.id);
+            const defaultPicPath = path.join(__dirname, "..", "..", "img", "profile_default.png");
+            const profilePic = await imageKeeper.saveImage(defaultPicPath);
+
+            await this.model.profilesModel.update(
+                {
+                    props: [
+                        {
+                            id: profileDocument.id
+                        }
+                    ]
+                },
+                {
+                    picture: profilePic
+                }
+            );
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return userDocument;
     }
 
     async validate(handleOrEmail: string, password: string): Promise<UsersDocument>
