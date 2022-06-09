@@ -127,7 +127,7 @@ class BasicModel<DocumentType extends BasicDocument>
             }
             else
             {
-                columns.push(`${column} = ${queryValues.length + 1}`);
+                columns.push(`${column} = $${queryValues.length + 1}`);
                 queryValues.push(values[column]);
             }
         }
