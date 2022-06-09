@@ -83,27 +83,20 @@ class UsersRouter extends Router
 
         try
         {
-            var profileDocument = await req.model.profilesModel.create({
-                name: req.newUserForm.fullName,
-                birthdate: req.newUserForm.birthdate,
-                picture: "",
-                join_date: new Date().getTime()
-            });
-        }
-        catch(err)
-        {
-            console.log(err);
-            return this.error(res, new InternalServerErrorResponse());
-        }
-
-        try
-        {
-            var userDocument = await req.model.usersModel.create({
-                handle: req.newUserForm.handle,
-                email: req.newUserForm.email,
-                password: encrypt(req.newUserForm.password),
-                profile_id: profileDocument.id
-            });
+            var userDocument = await req.model.usersModel.createNewUser(
+                {
+                    name: req.newUserForm.fullName,
+                    birthdate: req.newUserForm.birthdate,
+                    picture: "",
+                    join_date: new Date().getTime()
+                },
+                {
+                    handle: req.newUserForm.handle,
+                    email: req.newUserForm.email,
+                    password: req.newUserForm.password,
+                    profile_id: 0
+                }
+            );
         }
         catch(err)
         {
