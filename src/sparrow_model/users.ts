@@ -1,10 +1,11 @@
 import { Pool } from "pg";
 import { decrypt, encrypt } from "../encryption";
-import BasicDocument from "../model/basic_document";
+import BasicDocument, { DocumentAttributes } from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 import FollowsModel from "./follows";
-import ProfilesModel from "./profiles";
+import ProfilesModel, { ProfilesDocument } from "./profiles";
+import SparrowModel from "./sparrow_model";
 
 export interface UsersDocument extends BasicDocument
 {
@@ -48,9 +49,13 @@ const usersSchema = new Schema<UsersDocument>("users",
 
 class UsersModel extends BasicModel<UsersDocument>
 {
-    constructor(pool: Pool)
+    private model: SparrowModel;
+
+    constructor(pool: Pool, model: SparrowModel)
     {
         super(usersSchema, pool);
+
+        this.model = model;
     }
 
     async validate(handleOrEmail: string, password: string): Promise<UsersDocument>

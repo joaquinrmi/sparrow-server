@@ -24,7 +24,7 @@ class SparrowModel
         this.pool = new Pool();
 
         this.profilesModel = new ProfilesModel(this.pool);
-        this.usersModel = new UsersModel(this.pool);
+        this.usersModel = new UsersModel(this.pool, this);
         this.cheepsModel = new CheepsModel(this.pool, this);
         this.followsModel = new FollowsModel(this.pool);
         this.likesModel = new LikesModel(this.pool);
