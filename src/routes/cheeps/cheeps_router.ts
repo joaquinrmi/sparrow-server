@@ -214,14 +214,14 @@ class CheepsRouter extends Router
 
     private async deleteCheep(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.cheepId !== "number")
+        if(typeof req.query.cheepId === undefined)
         {
             return this.error(res, new InvalidQueryResponse());
         }
 
         try
         {
-            var deleted = await req.model.cheepsModel.deleteCheep(req.session["userId"], req.query.cheepId);
+            var deleted = await req.model.cheepsModel.deleteCheep(req.session["userId"], Number(req.query.cheepId));
         }
         catch(err)
         {
