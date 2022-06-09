@@ -101,8 +101,23 @@ class CheepsModel extends BasicModel<CheepsDocument>
         this.model = sparrowModel;
     }
 
-    async cheep(data: CheepsDocument): Promise<CheepsDocument>
+    async cheep(data: CheepsDocument): Promise<CheepsDocument | null>
     {
+        if(data.quote_target !== null)
+        {
+            if(data.content === null || data.content === undefined)
+            {
+                if(!(await this.registerNewRecheep(data.author_id, data.quote_target)))
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                await this.registerNewQuote(data.quote_target);
+            }
+        }
+
         try
         {
             var cheepDocument = await this.create(data);
@@ -116,18 +131,6 @@ class CheepsModel extends BasicModel<CheepsDocument>
         if(cheepDocument.response_target !== null)
         {
             this.registerNewComment(cheepDocument.response_target);
-        }
-
-        if(cheepDocument.quote_target !== null)
-        {
-            if(cheepDocument.content === null || cheepDocument.content === undefined)
-            {
-                this.registerNewRecheep(data.author_id, cheepDocument.quote_target);
-            }
-            else
-            {
-                this.registerNewQuote(cheepDocument.quote_target);
-            }
         }
 
         return cheepDocument;
@@ -415,7 +418,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async registerNewRecheep(userId: number, cheepId: number): Promise<void>
+    async registerNewRecheep(userId: number, cheepId: number): Promise<boolean>
     {
         try
         {
@@ -435,7 +438,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         if(exists)
         {
-            return;
+            return false;
         }
 
         try
@@ -462,6 +465,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
         {
             throw err;
         }
+
+        return true;
     }
 
     async unregisterRecheep(userId: number, cheepId: number): Promise<void>
