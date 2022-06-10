@@ -36,7 +36,7 @@ class CheepsRouter extends Router
 
     private async createCheep(req: Request, res: Response): Promise<any>
     {
-        if(req.newCheepForm.quoteTarget === undefined && req.newCheepForm.content === undefined)
+        if(req.newCheepForm.quoteTarget === undefined && req.newCheepForm.content === undefined && (req.newCheepForm.gallery === undefined || req.newCheepForm.gallery.length === 0))
         {
             return this.error(res, new InvalidCheepContentResponse("Cheep must have content."));
         }
