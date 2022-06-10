@@ -287,7 +287,14 @@ class CheepsRouter extends Router
 
         if(req.query.responses !== undefined)
         {
-            searchCheepsParameters.responses = Boolean(req.query.responses);
+            if(req.query.responses === "true")
+            {
+                searchCheepsParameters.responses = true;
+            }
+            else
+            {
+                searchCheepsParameters.responses = false;
+            }
         }
 
         if(req.query.onlyGallery !== undefined)
