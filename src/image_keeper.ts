@@ -14,9 +14,6 @@ class ImageKeeper
 
     async saveImage(img: any): Promise<string>
     {
-        let filename = `${randomWord(8)}.jpg`;
-        let path = `${this.imageFolder}/${filename}`;
-
         try
         {
             var buffer = await sharp(img).jpeg().toBuffer();
@@ -26,6 +23,42 @@ class ImageKeeper
             throw err;
         }
         
+        return await this.uploadBuffer(buffer);
+    }
+    
+    async saveProfilePicture(img: any): Promise<string>
+    {
+        try
+        {
+            var buffer = await sharp(img).jpeg().resize(500, 500, { position: "center", fit: "cover" }).toBuffer();
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return await this.uploadBuffer(buffer);
+    }
+
+    async saveBanner(img: any): Promise<string>
+    {
+        try
+        {
+            var buffer = await sharp(img).jpeg().resize(1500, 500, { position: "center", fit: "cover" }).toBuffer();
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return await this.uploadBuffer(buffer);
+    }
+
+    private async uploadBuffer(buffer: any): Promise<string>
+    {
+        let filename = `${randomWord(8)}.jpg`;
+        let path = `${this.imageFolder}/${filename}`;
+
         return await this.uploadImage(buffer, path);
     }
 
