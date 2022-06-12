@@ -13,14 +13,16 @@ class UploadRouter extends Router
     {
         super([
             new RouteMap(MethodType.Post, "/image", "uploadImage"),
-            new RouteMap(MethodType.Post, "/profile-picture", "uploadProfilePicture")
+            new RouteMap(MethodType.Post, "/profile-picture", "uploadProfilePicture"),
+            new RouteMap(MethodType.Post, "/banner", "uploadBanner")
         ]);
 
         this.registerFunction("uploadImage", this.uploadImage);
         this.registerFunction("uploadProfilePicture", this.uploadProfilePicture);
+        this.registerFunction("uploadBanner", this.uploadBanner);
 
-        this.useMiddleware(upload.single("image"), [ "/image" ]);
-        this.useMiddleware(checkSession, [ "/image", "/profile-picture" ]);
+        this.useMiddleware(upload.single("image"), [ "/image", "/profile-picture", "/banner" ]);
+        this.useMiddleware(checkSession, [ "/image", "/profile-picture", "/banner" ]);
     }
 
     private async uploadImage(req: Request, res: Response): Promise<any>
@@ -52,6 +54,29 @@ class UploadRouter extends Router
         try
         {
             var imgUrl = await imageKeeper.saveProfilePicture(req.file.buffer);
+        }
+        catch(err)
+        {
+            console.error(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(imgUrl.indexOf("https") === -1)
+        {
+            imgUrl.replace("http", "https");
+        }
+
+        res.status(StatusCode.Created).json({
+            imgUrl
+        });
+    }
+
+    private async uploadBanner(req: Request, res: Response): Promise<any>
+    {
+        const imageKeeper = new ImageKeeper(req.session["userId"]);
+        try
+        {
+            var imgUrl = await imageKeeper.saveBanner(req.file.buffer);
         }
         catch(err)
         {
