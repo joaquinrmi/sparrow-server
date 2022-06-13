@@ -128,26 +128,49 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         }
     }
 
-    async edit(userId: number, data: EditProfileForm): Promise<void>
+    async edit(userId: number, data: EditProfileForm, usersModel: UsersModel): Promise<void>
     {
-        let columns = new Array<string>();
-        let values = new Array<any>();
-
-        let index = 1;
-        for(let column in data)
+        try
         {
-            columns.push(`profiles.${column} = $${index}`);
-            values.push(data[column]);
-            ++index;
+            var documents = await usersModel.find({
+                props: [
+                    {
+                        id: userId
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
         }
 
-        values.push(userId);
+        if(documents.length === 0)
+        {
+            return;
+        }
 
-        const query = `UPDATE profiles SET ${columns.join(", ")} FROM profiles INNER JOIN users ON profiles.id = users.profile_id AND users.id = $${values.length};`;
+        let dataToSend: EditProfileForm = {};
+        for(let key in data)
+        {
+            if(data[key] !== undefined)
+            {
+                dataToSend[key] = data[key];
+            }
+        }
 
         try
         {
-            await this.pool.query(query, values);
+            await this.update(
+                {
+                    props: [
+                        {
+                            id: documents[0].profile_id
+                        }
+                    ]
+                },
+                dataToSend
+            );
         }
         catch(err)
         {
