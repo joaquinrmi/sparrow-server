@@ -97,7 +97,7 @@ class ProfilesRouter extends Router
 
         try
         {
-            await req.model.profilesModel.edit(req.session["userId"], req.editProfileForm);
+            await req.model.profilesModel.edit(req.session["userId"], req.editProfileForm, req.model.usersModel);
         }
         catch(err)
         {
@@ -110,37 +110,37 @@ class ProfilesRouter extends Router
 
     private checkEditProfileForm(req: Request, res: Response, next: NextFunction): any
     {
-        if(typeof req.body.banner !== undefined && typeof req.body.banner !== "string")
+        if(typeof req.body.banner !== "undefined" && typeof req.body.banner !== "string")
         {
             return this.error(res, new InvalidFormResponse());
         }
 
-        if(typeof req.body.picture !== undefined && typeof req.body.picture !== "string")
+        if(typeof req.body.picture !== "undefined" && typeof req.body.picture !== "string")
         {
             return this.error(res, new InvalidFormResponse());
         }
 
-        if(typeof req.body.name !== undefined && typeof req.body.name !== "string")
+        if(typeof req.body.name !== "undefined" && typeof req.body.name !== "string")
         {
             return this.error(res, new InvalidFormResponse());
         }
 
-        if(typeof req.body.description !== undefined && typeof req.body.description !== "string")
+        if(typeof req.body.description !== "undefined" && typeof req.body.description !== "string")
         {
             return this.error(res, new InvalidFormResponse());
         }
 
-        if(typeof req.body.location !== undefined && typeof req.body.location !== "string")
+        if(typeof req.body.location !== "undefined" && typeof req.body.location !== "string")
         {
             return this.error(res, new InvalidFormResponse());
         }
 
-        if(typeof req.body.website !== undefined && typeof req.body.website !== "string")
+        if(typeof req.body.website !== "undefined" && typeof req.body.website !== "string")
         {
             return this.error(res, new InvalidFormResponse());
         }
 
-        if(typeof req.body.birthdate !== undefined && typeof req.body.birthdate !== "number")
+        if(typeof req.body.birthdate !== "undefined" && typeof req.body.birthdate !== "number")
         {
             return this.error(res, new InvalidFormResponse());
         }
