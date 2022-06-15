@@ -261,12 +261,7 @@ class CheepsRouter extends Router
 
         if(req.query.maxTime !== undefined)
         {
-            if(typeof req.query.maxTime !== "number")
-            {
-                return this.error(res, new InvalidQueryResponse());
-            }
-
-            searchCheepsParameters.maxTime = req.query.maxTime;
+            searchCheepsParameters.maxTime = Number(req.query.maxTime);
         }
 
         if(req.query.userHandle !== undefined)
