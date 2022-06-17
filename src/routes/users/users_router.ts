@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { InternalServerErrorResponse, InvalidCredentialsResponse, InvalidFormResponse, InvalidQueryResponse, UserAlreadyExistsResponse } from "../error_response";
+import { InternalServerErrorResponse, InvalidCredentialsResponse, InvalidFormResponse, UserAlreadyExistsResponse } from "../error_response";
 import ErrorType from "../error_type";
 import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
-import { encrypt } from "../../encryption";
 import checkSession from "../check_session";
 
 class UsersRouter extends Router
