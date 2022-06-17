@@ -184,32 +184,14 @@ class FollowsModel extends BasicModel<FollowsDocument>
 
     async createUserCellInfo(row: any, userId: number): Promise<UserCellInfo>
     {
-        try
-        {
-            var following = await this.exists({
-                props: [
-                    {
-                        user_id: userId,
-                        target_id: row.user_id
-                    }
-                ]
-            });
-        }
-        catch(err)
-        {
-            throw err;
-        }
+        const followingQuery = `SELECT count(ft.id) FROM follows AS ft WHERE ft.user_id = $1 AND ft.target_id = $2`;
+        const followerQuery = `SELECT count(ft.id) FROM follows AS ft WHERE ft.user_id = $2 AND ft.target_id = $1`;
 
+        const query = `SELECT ((${followingQuery}) > 0) AS following, ((${followerQuery}) > 0) AS follower`;
+        
         try
         {
-            var follower = await this.exists({
-                props: [
-                    {
-                        user_id: row.user_id,
-                        target_id: userId
-                    }
-                ]
-            });
+            var response = await this.pool.query(query, [ userId, row.user_id ]);
         }
         catch(err)
         {
@@ -221,8 +203,8 @@ class FollowsModel extends BasicModel<FollowsDocument>
             name: row.name,
             picture: row.picture,
             description: row.description,
-            following: following,
-            follower: follower
+            following: response.rows[0].following,
+            follower: response.rows[0].follower
         };
     }
 }
