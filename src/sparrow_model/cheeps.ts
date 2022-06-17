@@ -690,6 +690,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
     private async createCheepData(currentUserId: number, rowData: any): Promise<CheepData>
     {
+        if(rowData === undefined)
+        {
+            return UNDEFINED_CHEEP_DATA;
+        }
+
         let responseOf: CheepData;
         if(rowData.response_target !== null)
         {
@@ -762,6 +767,25 @@ export interface CheepData
     userLikesIt: boolean;
     userRecheeppedIt: boolean;
 }
+
+const UNDEFINED_CHEEP_DATA: CheepData = {
+    id: -1,
+    author: {
+        handle: "",
+        name: "",
+        picture: "",
+    },
+    dateCreated: 0,
+    quoteTarget: undefined,
+    content: "",
+    gallery: [],
+    comments: 0,
+    likes: 0,
+    recheeps: 0,
+    quotes: 0,
+    userLikesIt: false,
+    userRecheeppedIt: false
+};
 
 export interface SearchCheepsParameters
 {
