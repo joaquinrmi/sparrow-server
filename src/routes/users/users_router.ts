@@ -19,7 +19,8 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Post, "/follow", "followUser"),
             new RouteMap(MethodType.Post, "/unfollow", "unfollowUser"),
             new RouteMap(MethodType.Get, "/follower-list", "getFollowers"),
-            new RouteMap(MethodType.Get, "/following-list", "getFollowing")
+            new RouteMap(MethodType.Get, "/following-list", "getFollowing"),
+            new RouteMap(MethodType.Get, "/recommended-list", "getRecommended"),
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
@@ -31,10 +32,11 @@ class UsersRouter extends Router
         this.registerFunction("unfollowUser", this.unfollowUser);
         this.registerFunction("getFollowers", this.getFollowers);
         this.registerFunction("getFollowing", this.getFollowing);
+        this.registerFunction("getRecommended", this.getRecommended);
 
         this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
-        this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list" ]);
+        this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list", "/recommended-list" ]);
     }
 
     private async createNewUser(req: Request, res: Response): Promise<any>
@@ -383,6 +385,27 @@ class UsersRouter extends Router
         }
 
         res.status(StatusCode.OK).json(followers);
+    }
+
+    private async getRecommended(req: Request, res: Response): Promise<any>
+    {
+        let offsetId = 0;
+        if(req.query.offsetId !== undefined)
+        {
+            offsetId = Number(req.query.offsetId);
+        }
+
+        try
+        {
+            var recommended = await req.model.usersModel.getRecommendedList(req.session["userId"], offsetId)
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json(recommended);
     }
 
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
