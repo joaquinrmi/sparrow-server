@@ -348,7 +348,7 @@ class UsersRouter extends Router
 
         try
         {
-            var followers = await req.model.followsModel.getFollowers(req.session["userId"], String(req.query.userHandle), offset, req.model.usersModel);
+            var followers = await req.model.followsModel.getFollowers(req.session["userId"], String(req.query.userHandle), offset);
         }
         catch(err)
         {
@@ -374,7 +374,7 @@ class UsersRouter extends Router
 
         try
         {
-            var followers = await req.model.followsModel.getFollowing(req.session["userId"], String(req.query.userHandle), offset, req.model.usersModel);
+            var followers = await req.model.followsModel.getFollowing(req.session["userId"], String(req.query.userHandle), offset);
         }
         catch(err)
         {
