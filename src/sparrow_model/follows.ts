@@ -209,11 +209,27 @@ class FollowsModel extends BasicModel<FollowsDocument>
     {
         try
         {
-            var exists = await this.exists({
+            var following = await this.exists({
                 props: [
                     {
                         user_id: userId,
                         target_id: row.user_id
+                    }
+                ]
+            });
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        try
+        {
+            var follower = await this.exists({
+                props: [
+                    {
+                        user_id: row.user_id,
+                        target_id: userId
                     }
                 ]
             });
@@ -228,7 +244,8 @@ class FollowsModel extends BasicModel<FollowsDocument>
             name: row.name,
             picture: row.picture,
             description: row.description,
-            following: exists
+            following: following,
+            follower: follower
         };
     }
 }
