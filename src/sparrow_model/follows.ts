@@ -3,7 +3,6 @@ import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 import SparrowModel from "./sparrow_model";
-import UsersModel from "./users";
 import UserCellInfo from "./user_cell_info";
 
 export interface FollowsDocument extends BasicDocument
