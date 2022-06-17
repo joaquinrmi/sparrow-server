@@ -182,7 +182,7 @@ class FollowsModel extends BasicModel<FollowsDocument>
         return users;
     }
 
-    private async createUserCellInfo(row: any, userId: number): Promise<UserCellInfo>
+    async createUserCellInfo(row: any, userId: number): Promise<UserCellInfo>
     {
         try
         {
