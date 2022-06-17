@@ -216,8 +216,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         let whereConditions = new Array<string>();
 
-        const words = parameters.words.map((word) => `%${word.toLowerCase()}%`).join("|");
-        whereConditions.push(`LOWER(cheeps.content) SIMILAR TO '${words}'`);
+        if(parameters.words.length > 0)
+        {
+            const words = parameters.words.map((word) => `%${word.toLowerCase()}%`).join("|");
+            whereConditions.push(`LOWER(cheeps.content) SIMILAR TO '${words}'`);
+        }
 
         whereConditions.push(`cheeps.date_created < $${values.length + 1}`);
         values.push(parameters.maxTime);
