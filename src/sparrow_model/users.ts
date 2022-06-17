@@ -8,6 +8,7 @@ import Schema from "../model/schema/schema";
 import FollowsModel from "./follows";
 import ProfilesModel, { ProfilesDocument } from "./profiles";
 import SparrowModel from "./sparrow_model";
+import UserCellInfo from "./user_cell_info";
 
 export interface UsersDocument extends BasicDocument
 {
@@ -189,6 +190,40 @@ class UsersModel extends BasicModel<UsersDocument>
             name: profile.name,
             picture: profile.picture
         };
+    }
+
+    async getRecommendedList(currentUserId: number, offsetId: number): Promise<Array<UserCellInfo>>
+    {
+        const query = `
+            SELECT u.id AS user_id, u.handle, p.name, p.picture, p.description
+            FROM users AS u
+            INNER JOIN profiles AS p ON p.id = u.profile_id
+            WHERE u.id < $1
+            LIMIT 20
+        `;
+
+        try
+        {
+            var response = await this.pool.query(query, [ offsetId ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let users = new Array<UserCellInfo>();
+
+        if(response.rowCount === 0)
+        {
+            return users;
+        }
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            users.push(await this.model.followsModel.createUserCellInfo(response.rows[i], currentUserId));
+        }
+
+        return users;
     }
 
     async follow(userId: number, targetHandle: string, followsModel: FollowsModel): Promise<boolean>
