@@ -219,6 +219,18 @@ class UsersModel extends BasicModel<UsersDocument>
         const targetId = tuDoc[0].id;
         const targetProfileId = tuDoc[0].profile_id;
 
+        if(await followsModel.exists({
+            props: [
+                {
+                    user_id: userId,
+                    target_id: targetId
+                }
+            ]
+        }))
+        {
+            return false;
+        }
+
         try
         {
             var userDoc = await this.find(
@@ -243,18 +255,6 @@ class UsersModel extends BasicModel<UsersDocument>
         }
 
         const userProfileId = userDoc[0].profile_id;
-
-        if(await followsModel.exists({
-            props: [
-                {
-                    user_id: userId,
-                    target_id: targetId
-                }
-            ]
-        }))
-        {
-            return false;
-        }
 
         const updateProfileQuery = `
             UPDATE profiles
@@ -325,6 +325,18 @@ class UsersModel extends BasicModel<UsersDocument>
         const targetId = tuDoc[0].id;
         const targetProfileId = tuDoc[0].profile_id;
 
+        if(!await followsModel.exists({
+            props: [
+                {
+                    user_id: userId,
+                    target_id: targetId
+                }
+            ]
+        }))
+        {
+            return false;
+        }
+
         try
         {
             var userDoc = await this.find(
@@ -349,18 +361,6 @@ class UsersModel extends BasicModel<UsersDocument>
         }
 
         const userProfileId = userDoc[0].profile_id;
-
-        if(!await followsModel.exists({
-            props: [
-                {
-                    user_id: userId,
-                    target_id: targetId
-                }
-            ]
-        }))
-        {
-            return false;
-        }
 
         const updateProfileQuery = `
             UPDATE profiles
