@@ -342,15 +342,15 @@ class UsersRouter extends Router
             return this.error(res, new InvalidFormResponse());
         }
 
-        let offset = 0;
-        if(req.query.offset !== undefined)
+        let offsetId = 0;
+        if(req.query.offsetId !== undefined)
         {
-            offset = Number(req.query.offset);
+            offsetId = Number(req.query.offsetId);
         }
 
         try
         {
-            var followers = await req.model.followsModel.getFollowers(req.session["userId"], String(req.query.userHandle), offset);
+            var followers = await req.model.followsModel.getFollowers(req.session["userId"], String(req.query.userHandle), offsetId);
         }
         catch(err)
         {
@@ -368,15 +368,15 @@ class UsersRouter extends Router
             return this.error(res, new InvalidFormResponse());
         }
 
-        let offset = 0;
-        if(req.query.offset !== undefined)
+        let offsetId = 0;
+        if(req.query.offsetId !== undefined)
         {
-            offset = Number(req.query.offset);
+            offsetId = Number(req.query.offsetId);
         }
 
         try
         {
-            var followers = await req.model.followsModel.getFollowing(req.session["userId"], String(req.query.userHandle), offset);
+            var followers = await req.model.followsModel.getFollowing(req.session["userId"], String(req.query.userHandle), offsetId);
         }
         catch(err)
         {
