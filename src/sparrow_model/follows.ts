@@ -63,14 +63,14 @@ class FollowsModel extends BasicModel<FollowsDocument>
         }
     }
 
-    async getFollowers(currentUserId: number, userHandle: string, offset: number, usersModel: UsersModel): Promise<{
+    async getFollowers(currentUserId: number, userHandle: string, offset: number): Promise<{
         users: Array<UserCellInfo>,
         offset: number
     }>
     {
         try
         {
-            var documents = await usersModel.find(
+            var documents = await this.model.usersModel.find(
                 {
                     props: [
                         {
@@ -134,14 +134,14 @@ class FollowsModel extends BasicModel<FollowsDocument>
         };
     }
 
-    async getFollowing(currentUserId: number, userHandle: string, offset: number, usersModel: UsersModel): Promise<{
+    async getFollowing(currentUserId: number, userHandle: string, offset: number): Promise<{
         users: Array<UserCellInfo>,
         offset: number
     }>
     {
         try
         {
-            var documents = await usersModel.find(
+            var documents = await this.model.usersModel.find(
                 {
                     props: [
                         {
