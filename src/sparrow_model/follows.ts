@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
+import SparrowModel from "./sparrow_model";
 import UsersModel from "./users";
 import UserCellInfo from "./user_cell_info";
 
@@ -38,9 +39,13 @@ const followsSchema = new Schema<FollowsDocument>("follows",
 
 class FollowsModel extends BasicModel<FollowsDocument>
 {
-    constructor(pool: Pool)
+    private model: SparrowModel;
+
+    constructor(pool: Pool, model: SparrowModel)
     {
         super(followsSchema, pool);
+
+        this.model = model;
     }
 
     async registerFollow(userId: number, targetId: number): Promise<void>
