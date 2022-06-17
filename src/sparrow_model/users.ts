@@ -198,13 +198,13 @@ class UsersModel extends BasicModel<UsersDocument>
             SELECT u.id AS user_id, u.handle, p.name, p.picture, p.description
             FROM users AS u
             INNER JOIN profiles AS p ON p.id = u.profile_id
-            WHERE u.id < $1
+            WHERE u.id != $1 AND u.id < $2
             LIMIT 20
         `;
 
         try
         {
-            var response = await this.pool.query(query, [ offsetId ]);
+            var response = await this.pool.query(query, [ currentUserId, offsetId ]);
         }
         catch(err)
         {
