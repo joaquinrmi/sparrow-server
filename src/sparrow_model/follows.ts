@@ -122,10 +122,7 @@ class FollowsModel extends BasicModel<FollowsDocument>
         return users;
     }
 
-    async getFollowing(currentUserId: number, userHandle: string, offset: number): Promise<{
-        users: Array<UserCellInfo>,
-        offset: number
-    }>
+    async getFollowing(currentUserId: number, userHandle: string, offsetId: number): Promise<Array<UserCellInfo>>
     {
         try
         {
@@ -157,13 +154,13 @@ class FollowsModel extends BasicModel<FollowsDocument>
             FROM follows
             INNER JOIN users ON users.id = follows.target_id
             INNER JOIN profiles ON profiles.id = users.profile_id
-            WHERE follows.user_id = $1 AND follows.id > $2
+            WHERE follows.user_id = $1 AND follows.id < $2
             LIMIT 20;
         `;
 
         try
         {
-            var response = await this.pool.query(query, [ userId, offset ]);
+            var response = await this.pool.query(query, [ userId, offsetId ]);
         }
         catch(err)
         {
@@ -174,10 +171,7 @@ class FollowsModel extends BasicModel<FollowsDocument>
 
         if(response.rowCount === 0)
         {
-            return {
-                users: users,
-                offset: Number.MAX_SAFE_INTEGER
-            }
+            return users;
         }
 
         for(let i = 0; i < response.rowCount; ++i)
@@ -185,12 +179,7 @@ class FollowsModel extends BasicModel<FollowsDocument>
             users.push(await this.createUserCellInfo(response.rows[i], currentUserId));
         }
 
-        let newOffset = response.rows[response.rowCount - 1].id;
-
-        return {
-            users: users,
-            offset: newOffset
-        };
+        return users;
     }
 
     private async createUserCellInfo(row: any, userId: number): Promise<UserCellInfo>
