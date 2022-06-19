@@ -24,30 +24,14 @@ class ProfilesRouter extends Router
 
     private async getProfile(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.query.handle !== "string")
+        if(req.query.handle === undefined)
         {
             return this.error(res, new InvalidQueryResponse());
         }
 
         try
         {
-            var searchResult = await req.model.profilesModel.innerJoin<UsersDocument>(
-                {
-                    firstConditions: {},
-                    secondConditions: {
-                        props: [
-                            {
-                                handle: req.query.handle
-                            }
-                        ]
-                    },
-                    joinConditions: {
-                        id: "id"
-                    }
-                },
-                {},
-                req.model.usersModel
-            );
+            var profileData = await req.model.profilesModel.getUserProfileData(req.session["userId"], String(req.query.handle));
         }
         catch(err)
         {
@@ -55,27 +39,7 @@ class ProfilesRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        if(searchResult.length === 0)
-        {
-            return this.error(res, new ProfileNotFoundResponse(req.query.handle));
-        }
-
-        let profileDocument = searchResult[0].firstDocuments;
-
-        res.status(StatusCode.OK).json({
-            handle: req.query.handle,
-            name: profileDocument.name,
-            picture: profileDocument.picture,
-            banner: profileDocument.banner,
-            description: profileDocument.description,
-            joinDate: Number(profileDocument.join_date),
-            birthdate: profileDocument.birthdate !== null ? Number(profileDocument.birthdate) : null,
-            location: profileDocument.location,
-            website: profileDocument.website,
-            following: profileDocument.following,
-            followers: profileDocument.followers,
-            cheepCount: profileDocument.cheeps
-        });
+        res.status(StatusCode.OK).json(profileData);
     }
 
     private async editProfile(req: Request, res: Response): Promise<any>
