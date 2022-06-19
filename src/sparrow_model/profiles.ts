@@ -87,7 +87,7 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
     {
         const followingQuery = `SELECT count(f.id) FROM follows AS f INNER JOIN users AS u ON f.target_id = u.id WHERE f.user_id = $1 AND u.handle = $2`;
 
-        const query = `SELECT ${this.columnList.map(column => `p.${column}`).join(", ")}, (${followingQuery} > 0) AS user_follows_them FROM profiles AS p INNER JOIN users AS u ON p.id = u.profile_id WHERE u.handle = $2`;
+        const query = `SELECT ${this.columnList.map(column => `p.${column}`).join(", ")}, ((${followingQuery}) > 0) AS user_follows_them FROM profiles AS p INNER JOIN users AS u ON p.id = u.profile_id WHERE u.handle = $2`;
 
         try
         {
@@ -121,8 +121,8 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
             description: profileData.description === null ? undefined : profileData.description,
             joinDate: profileData.join_date,
             birthdate: currentUser ? profileData.birthdate : undefined,
-            location: profileData.location,
-            website: profileData.website,
+            location: profileData.location === null ? undefined : profileData.location,
+            website: profileData.website === null ? undefined : profileData.website,
             followingCount: profileData.following,
             followerCount: profileData.followers,
             cheepCount: profileData.cheeps,
@@ -239,8 +239,8 @@ export interface UserProfileData
     description?: string;
     joinDate: number;
     birthdate?: number;
-    location: string;
-    website: string;
+    location?: string;
+    website?: string;
     followingCount: number;
     followerCount: number;
     cheepCount: number;
