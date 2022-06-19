@@ -115,6 +115,7 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         const profileData = response.rows[0];
 
         return {
+            handle: userHandle,
             name: profileData.name,
             picture: profileData.picture,
             banner: profileData.banner === null ? undefined : profileData.banner,
@@ -233,6 +234,7 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
 
 export interface UserProfileData
 {
+    handle: string;
     name: string;
     picture: string;
     banner?: string;
