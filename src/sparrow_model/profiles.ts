@@ -3,6 +3,7 @@ import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 import EditProfileForm from "../routes/profiles/edit_profile_form";
+import SparrowModel from "./sparrow_model";
 import UsersModel from "./users";
 
 export interface ProfilesDocument extends BasicDocument
@@ -73,16 +74,20 @@ const profilesSchema = new Schema<ProfilesDocument>("profiles",
 
 class ProfilesModel extends BasicModel<ProfilesDocument>
 {
-    constructor(pool: Pool)
+    private model: SparrowModel;
+
+    constructor(pool: Pool, model: SparrowModel)
     {
         super(profilesSchema, pool);
+
+        this.model = model;
     }
 
-    async registerNewCheep(userId: number, usersModel: UsersModel): Promise<void>
+    async registerNewCheep(userId: number): Promise<void>
     {
         try
         {
-            var documents = await usersModel.find(
+            var documents = await this.model.usersModel.find(
                 {
                     props: [
                         {
@@ -128,11 +133,11 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         }
     }
 
-    async edit(userId: number, data: EditProfileForm, usersModel: UsersModel): Promise<void>
+    async edit(userId: number, data: EditProfileForm): Promise<void>
     {
         try
         {
-            var documents = await usersModel.find({
+            var documents = await this.model.usersModel.find({
                 props: [
                     {
                         id: userId
