@@ -83,6 +83,8 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         this.model = model;
     }
 
+
+
     async registerNewCheep(userId: number): Promise<void>
     {
         try
@@ -182,6 +184,22 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
             throw err;
         }
     }
+}
+
+export interface UserProfileData
+{
+    name: string;
+    picture: string;
+    banner?: string;
+    description?: string;
+    joinDate: number;
+    birthdate: number;
+    location: string;
+    website: string;
+    followingCount: number;
+    followerCount: number;
+    cheepCount: number;
+    following: boolean;
 }
 
 export default ProfilesModel;
