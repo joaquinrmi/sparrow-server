@@ -369,7 +369,7 @@ class UsersModel extends BasicModel<UsersDocument>
             ]
         }))
         {
-            return false;
+            return true;
         }
 
         try
