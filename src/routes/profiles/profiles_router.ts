@@ -97,7 +97,7 @@ class ProfilesRouter extends Router
 
         try
         {
-            await req.model.profilesModel.edit(req.session["userId"], req.editProfileForm, req.model.usersModel);
+            await req.model.profilesModel.edit(req.session["userId"], req.editProfileForm);
         }
         catch(err)
         {
