@@ -121,7 +121,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         try
         {
             var cheepDocument = await this.create(data);
-            await this.model.profilesModel.registerNewCheep(data.author_id, this.model.usersModel);
+            await this.model.profilesModel.registerNewCheep(data.author_id);
         }
         catch(err)
         {
