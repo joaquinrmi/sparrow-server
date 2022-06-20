@@ -342,7 +342,7 @@ class UsersRouter extends Router
             return this.error(res, new InvalidFormResponse());
         }
 
-        let offsetId = 0;
+        let offsetId = 2_147_483_647;
         if(req.query.offsetId !== undefined)
         {
             offsetId = Number(req.query.offsetId);
@@ -368,7 +368,7 @@ class UsersRouter extends Router
             return this.error(res, new InvalidFormResponse());
         }
 
-        let offsetId = 0;
+        let offsetId = 2_147_483_647;
         if(req.query.offsetId !== undefined)
         {
             offsetId = Number(req.query.offsetId);
@@ -389,7 +389,7 @@ class UsersRouter extends Router
 
     private async getRecommended(req: Request, res: Response): Promise<any>
     {
-        let offsetId = 0;
+        let offsetId = 2_147_483_647;
         if(req.query.offsetId !== undefined)
         {
             offsetId = Number(req.query.offsetId);
