@@ -18,7 +18,7 @@ class ProfilesRouter extends Router
         this.registerFunction("getProfile", this.getProfile);
         this.registerFunction("editProfile", this.editProfile);
 
-        this.useMiddleware(checkSession, [ "/edit-profile" ]);
+        this.useMiddleware(checkSession, [ "/get", "/edit-profile" ]);
         this.useMiddleware(this.checkEditProfileForm, [ "/edit-profile" ]);
     }
 
