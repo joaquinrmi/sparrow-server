@@ -283,14 +283,14 @@ class UsersRouter extends Router
 
     private async followUser(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.body.handle !== "string")
+        if(req.body.userHandle === undefined)
         {
             return this.error(res, new InvalidFormResponse());
         }
 
         try
         {
-            var followed = await req.model.usersModel.follow(req.session["userId"], req.body.handle, req.model.followsModel);
+            var followed = await req.model.usersModel.follow(req.session["userId"], req.body.userHandle, req.model.followsModel);
         }
         catch(err)
         {
@@ -310,14 +310,14 @@ class UsersRouter extends Router
 
     private async unfollowUser(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.body.handle !== "string")
+        if(req.body.userHandle === undefined)
         {
             return this.error(res, new InvalidFormResponse());
         }
 
         try
         {
-            var followed = await req.model.usersModel.unfollow(req.session["userId"], req.body.handle, req.model.followsModel);
+            var followed = await req.model.usersModel.unfollow(req.session["userId"], req.body.userHandle, req.model.followsModel);
         }
         catch(err)
         {
