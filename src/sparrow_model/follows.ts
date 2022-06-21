@@ -199,6 +199,7 @@ class FollowsModel extends BasicModel<FollowsDocument>
         }
 
         return {
+            id: row.user_id,
             handle: row.handle,
             name: row.name,
             picture: row.picture,
