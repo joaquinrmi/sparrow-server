@@ -227,29 +227,46 @@ class UsersModel extends BasicModel<UsersDocument>
         return users;
     }
 
-    async searchUsers(currentUserId: number, options: SearchUsersForm, offsetId?: number): Promise<Array<UserCellInfo>>
+    async searchUsers(currentUserId: number, options: SearchUsersForm): Promise<Array<UserCellInfo>>
     {
-        let values: Array<any> = [ offsetId ];
+        let values = new Array<any>();
+        let where = new Array<string>();
+        let orderBy = "";
 
-        let nameOrHandle = "";
         if(options.nameOrHandle !== undefined)
         {
             const words = options.nameOrHandle.map((word) => `%${word.toLowerCase()}%`).join("|");
 
-            nameOrHandle = `
+            where.push(`
                 (LOWER(u.handle) SIMILAR TO '${words}' OR
                 LOWER(p.name) SIMILAR TO '${words}')
-            `;
+            `);
+
+            orderBy = `ORDER BY u.id DESC`;
         }
 
-        let likeTarget = "";
         let likeTargetJoin = "";
         if(options.likeTarget !== undefined)
         {
             values.push(options.likeTarget);
 
             likeTargetJoin = `INNER JOIN likes AS l ON l.user_id = u.id`;
-            likeTarget = `l.cheep_id = $${values.length}`;
+            where.push(`l.cheep_id = $${values.length}`);
+
+            orderBy = `ORDER BY l.id DESC`;
+        }
+
+        if(options.offsetId !== undefined)
+        {
+            values.push(options.offsetId);
+
+            let a = "u.id";
+            if(options.likeTarget !== undefined)
+            {
+                a = "l.id";
+            }
+
+            where.push(`${a} < $${values.length}`);
         }
 
         const query = `
@@ -257,7 +274,8 @@ class UsersModel extends BasicModel<UsersDocument>
             FROM users AS u
             INNER JOIN profiles as p ON p.id = u.profile_id
             ${likeTargetJoin}
-            WHERE ${nameOrHandle}${nameOrHandle.length > 0 ? " AND " : ""}${likeTarget}${likeTarget.length > 0 ? " AND " : ""} u.id < $1
+            ${where.length > 0 ? where.join(" AND ") : ""}
+            ${orderBy}
             LIMIT 20
         `;
 
