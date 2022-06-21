@@ -210,6 +210,37 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return deleteCount > 0;
     }
 
+    async deleteRecheep(userId: number, targetId: number): Promise<boolean>
+    {
+        try
+        {
+            const cheepDocuments = await this.find(
+                {
+                    props: [
+                        {
+                            author_id: userId,
+                            quote_target: targetId
+                        }
+                    ]
+                },
+                [ "id" ]
+            );
+
+            if(cheepDocuments.length === 0)
+            {
+                return false;
+            }
+
+            const cheep = cheepDocuments[0];
+
+            return await this.deleteCheep(userId, cheep.id);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
     async searchCheeps(currentUserId: number, parameters: SearchCheepsParameters): Promise<Array<CheepData>>
     {
         let values: Array<any> = [];
