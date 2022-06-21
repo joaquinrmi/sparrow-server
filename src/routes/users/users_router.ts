@@ -21,7 +21,7 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Get, "/follower-list", "getFollowers"),
             new RouteMap(MethodType.Get, "/following-list", "getFollowing"),
             new RouteMap(MethodType.Get, "/recommended-list", "getRecommended"),
-            new RouteMap(MethodType.Get, "/search", "searchUsers")
+            new RouteMap(MethodType.Post, "/search", "searchUsers")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
