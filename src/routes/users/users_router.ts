@@ -5,6 +5,7 @@ import Router from "../router";
 import RouteMap, { MethodType } from "../route_map";
 import StatusCode from "../status_code";
 import checkSession from "../check_session";
+import SearchUsersForm from "./search_users_form";
 
 class UsersRouter extends Router
 {
@@ -21,7 +22,7 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Get, "/follower-list", "getFollowers"),
             new RouteMap(MethodType.Get, "/following-list", "getFollowing"),
             new RouteMap(MethodType.Get, "/recommended-list", "getRecommended"),
-            new RouteMap(MethodType.Post, "/search", "searchUsers")
+            new RouteMap(MethodType.Get, "/search", "searchUsers")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
@@ -38,7 +39,6 @@ class UsersRouter extends Router
 
         this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
-        this.useMiddleware(this.checkSearchUsersForm, [ "/search" ]);
 
         this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list", "/recommended-list", "/search" ]);
     }
@@ -414,9 +414,26 @@ class UsersRouter extends Router
 
     private async searchUsers(req: Request, res: Response): Promise<any>
     {
+        let searchUsersForm: SearchUsersForm = {};
+
+        if(req.query.nameOrHandle !== undefined)
+        {
+            searchUsersForm.nameOrHandle = String(req.query.nameOrHandle).split("+");
+        }
+
+        if(req.query.likeTarget !== undefined)
+        {
+            searchUsersForm.likeTarget = Number(req.query.likeTarget);
+        }
+
+        if(req.query.offsetId !== undefined)
+        {
+            searchUsersForm.offsetId = Number(req.query.offsetId);
+        }
+
         try
         {
-            var users = await req.model.usersModel.searchUsers(req.session["userId"], req.searchUsersForm);
+            var users = await req.model.usersModel.searchUsers(req.session["userId"], searchUsersForm);
         }
         catch(err)
         {
@@ -499,31 +516,6 @@ class UsersRouter extends Router
         };
 
         next();
-    }
-
-    private async checkSearchUsersForm(req: Request, res: Response, next: NextFunction): Promise<any>
-    {
-    	if(req.body === undefined)
-    	{
-    		return this.error(res, new InvalidFormResponse());
-    	}
-
-    	if(req.body.nameOrHandle !== undefined && !Array.isArray(req.body.nameOrHandle))
-    	{
-    		return this.error(res, new InvalidFormResponse());
-    	}
-
-    	if(req.body.likeTarget !== undefined && typeof req.body.likeTarget !== "number")
-    	{
-    		return this.error(res, new InvalidFormResponse());
-    	}
-
-    	req.searchUsersForm = {
-    		nameOrHandle: req.body.nameOrHandle,
-    		likeTarget: req.body.likeTarget
-    	};
-
-    	next();
     }
 }
 
