@@ -9,6 +9,7 @@ import FollowsModel from "./follows";
 import ProfilesModel, { ProfilesDocument } from "./profiles";
 import SparrowModel from "./sparrow_model";
 import UserCellInfo from "./user_cell_info";
+import SearchUsersForm from "../routes/users/search_users_form";
 
 export interface UsersDocument extends BasicDocument
 {
@@ -205,6 +206,64 @@ class UsersModel extends BasicModel<UsersDocument>
         try
         {
             var response = await this.pool.query(query, [ currentUserId, offsetId ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let users = new Array<UserCellInfo>();
+
+        if(response.rowCount === 0)
+        {
+            return users;
+        }
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            users.push(await this.model.followsModel.createUserCellInfo(response.rows[i], currentUserId));
+        }
+
+        return users;
+    }
+
+    async searchUsers(currentUserId: number, options: SearchUsersForm, offsetId?: number): Promise<Array<UserCellInfo>>
+    {
+        let values: Array<any> = [ offsetId ];
+
+        let nameOrHandle = "";
+        if(options.nameOrHandle !== undefined)
+        {
+            const words = options.nameOrHandle.map((word) => `%${word.toLowerCase()}%`).join("|");
+
+            nameOrHandle = `
+                (LOWER(u.handle) SIMILAR TO '${words}' OR
+                LOWER(p.name) SIMILAR TO '${words}')
+            `;
+        }
+
+        let likeTarget = "";
+        let likeTargetJoin = "";
+        if(options.likeTarget !== undefined)
+        {
+            values.push(options.likeTarget);
+
+            likeTargetJoin = `INNER JOIN likes AS l ON l.user_id = u.id`;
+            likeTarget = `l.cheep_id = $${values.length}`;
+        }
+
+        const query = `
+            SELECT u.id AS user_id, u.handle, p.name, p.picture, p.description
+            FROM users AS u
+            INNER JOIN profiles as p ON p.id = u.profile_id
+            ${likeTargetJoin}
+            WHERE ${nameOrHandle}${nameOrHandle.length > 0 ? " AND " : ""}${likeTarget}${likeTarget.length > 0 ? " AND " : ""} u.id < $1
+            LIMIT 20
+        `;
+
+        try
+        {
+            var response = await this.pool.query(query, values);
         }
         catch(err)
         {
