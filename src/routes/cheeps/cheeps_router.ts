@@ -18,6 +18,7 @@ class CheepsRouter extends Router
             new RouteMap(MethodType.Post, "/like", "likeCheep"),
             new RouteMap(MethodType.Post, "/unlike", "unlikeCheep"),
             new RouteMap(MethodType.Post, "/delete", "deleteCheep"),
+            new RouteMap(MethodType.Post, "/delete-recheep", "deleteRecheep"),
             new RouteMap(MethodType.Get, "/search", "searchCheeps")
         ]);
 
@@ -28,9 +29,10 @@ class CheepsRouter extends Router
         this.registerFunction("likeCheep", this.likeCheep);
         this.registerFunction("unlikeCheep", this.unlikeCheep);
         this.registerFunction("deleteCheep", this.deleteCheep);
+        this.registerFunction("deleteRecheep", this.deleteRecheep);
         this.registerFunction("searchCheeps", this.searchCheeps);
 
-        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/unlike", "/delete", "/search" ]);
+        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/unlike", "/delete", "/delete-recheep", "/search" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
@@ -222,6 +224,33 @@ class CheepsRouter extends Router
         try
         {
             var deleted = await req.model.cheepsModel.deleteCheep(req.session["userId"], Number(req.query.cheepId));
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        if(deleted)
+        {
+            return res.status(StatusCode.OK).json();
+        }
+        else
+        {
+            return this.error(res, new CannotDeleteCheepResponse());
+        }
+    }
+
+    private async deleteRecheep(req: Request, res: Response): Promise<any>
+    {
+        if(req.query.targetId === undefined)
+        {
+            return this.error(res, new InvalidQueryResponse());
+        }
+
+        try
+        {
+            var deleted = await req.model.cheepsModel.deleteRecheep(req.session["userId"], Number(req.query.targetId));
         }
         catch(err)
         {
