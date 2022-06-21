@@ -21,6 +21,7 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Get, "/follower-list", "getFollowers"),
             new RouteMap(MethodType.Get, "/following-list", "getFollowing"),
             new RouteMap(MethodType.Get, "/recommended-list", "getRecommended"),
+            new RouteMap(MethodType.Get, "/search", "searchUsers")
         ]);
 
         this.registerFunction("createNewUser", this.createNewUser);
@@ -33,10 +34,13 @@ class UsersRouter extends Router
         this.registerFunction("getFollowers", this.getFollowers);
         this.registerFunction("getFollowing", this.getFollowing);
         this.registerFunction("getRecommended", this.getRecommended);
+        this.registerFunction("searchUsers", this.searchUsers);
 
         this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
-        this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list", "/recommended-list" ]);
+        this.useMiddleware(this.checkSearchUsersForm, [ "/search" ]);
+
+        this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list", "/recommended-list", "/search" ]);
     }
 
     private async createNewUser(req: Request, res: Response): Promise<any>
@@ -408,6 +412,21 @@ class UsersRouter extends Router
         res.status(StatusCode.OK).json(recommended);
     }
 
+    private async searchUsers(req: Request, res: Response): Promise<any>
+    {
+        try
+        {
+            var users = await req.model.usersModel.searchUsers(req.session["userId"], req.searchUsersForm);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json(users);
+    }
+
     private async checkNewUserForm(req: Request, res: Response, next: NextFunction): Promise<any>
     {
         if(!req.body)
@@ -480,6 +499,31 @@ class UsersRouter extends Router
         };
 
         next();
+    }
+
+    private async checkSearchUsersForm(req: Request, res: Response, next: NextFunction): Promise<any>
+    {
+    	if(req.body === undefined)
+    	{
+    		return this.error(res, new InvalidFormResponse());
+    	}
+
+    	if(req.body.nameOrHandle !== undefined && !Array.isArray(req.body.nameOrHandle))
+    	{
+    		return this.error(res, new InvalidFormResponse());
+    	}
+
+    	if(req.body.likeTarget !== undefined && typeof req.body.likeTarget !== "number")
+    	{
+    		return this.error(res, new InvalidFormResponse());
+    	}
+
+    	req.searchUsersForm = {
+    		nameOrHandle: req.body.nameOrHandle,
+    		likeTarget: req.body.likeTarget
+    	};
+
+    	next();
     }
 }
 
