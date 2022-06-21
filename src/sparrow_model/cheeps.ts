@@ -825,6 +825,8 @@ export interface SearchCheepsParameters
     onlyGallery: boolean;
     responseOf: number;
     userHandle?: string;
+    quoteTarget?: number;
+    recheepTarget?: number;
 }
 
 export default CheepsModel;
