@@ -331,6 +331,15 @@ class CheepsRouter extends Router
             searchCheepsParameters.responseOf = Number(req.query.responseOf);
         }
 
+        if(req.query.quoteTarget !== undefined)
+        {
+            searchCheepsParameters.quoteTarget = Number(req.query.quoteTarget);
+        }
+        else if(req.query.recheepTarget !== undefined)
+        {
+            searchCheepsParameters.recheepTarget = Number(req.query.recheepTarget);
+        }
+
         let cheeps: Array<CheepData>;
         try
         {
