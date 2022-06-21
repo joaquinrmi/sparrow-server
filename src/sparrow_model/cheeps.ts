@@ -278,9 +278,25 @@ class CheepsModel extends BasicModel<CheepsDocument>
             values.push(parameters.userHandle);
         }
 
+        if(parameters.quoteTarget !== undefined)
+        {
+            whereConditions.push(`(cheeps.quote_target = $${values.length + 1} AND (cheeps.content != NULL OR cheeps.gallery != NULL))`);
+            values.push(parameters.quoteTarget);
+        }
+
+        let recheepJoin = "";
+        if(parameters.recheepTarget !== undefined)
+        {
+            whereConditions.push(`recheeps.cheep_id = $${values.length + 1}`);
+            values.push(parameters.recheepTarget);
+
+            recheepJoin = `INNER JOIN recheeps ON recheeps.user_id = users.id`;
+        }
+
         let query = `SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
             INNER JOIN users ON users.id = cheeps.author_id
             INNER JOIN profiles ON profiles.id = users.profile_id
+            ${recheepJoin}
             WHERE ${whereConditions.join(" AND ")}
             ORDER BY cheeps.date_created DESC LIMIT 20;`;
 
