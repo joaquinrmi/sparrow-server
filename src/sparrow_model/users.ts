@@ -274,7 +274,7 @@ class UsersModel extends BasicModel<UsersDocument>
             FROM users AS u
             INNER JOIN profiles as p ON p.id = u.profile_id
             ${likeTargetJoin}
-            ${where.length > 0 ? where.join(" AND ") : ""}
+            ${where.length > 0 ? "WHERE " + where.join(" AND ") : ""}
             ${orderBy}
             LIMIT 20
         `;
