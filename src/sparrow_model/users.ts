@@ -303,6 +303,52 @@ class UsersModel extends BasicModel<UsersDocument>
         return users;
     }
 
+    async getUsersLike(currentUserId: number, likeTarget: number, offsetId: number): Promise<Array<UserCellInfo>>
+    {
+        let values = [ likeTarget ];
+
+        const where = [ "l.cheep_id = $1" ];
+
+        if(offsetId !== undefined)
+        {
+            values.push(offsetId);
+            where.push(`l.id < $${values.length}`);
+        }
+
+        const query = `
+            SELECT l.id AS offset_id u.handle, p.name, p.picture, p.description
+            FROM users AS u
+            INNER JOIN profiles AS p ON p.id = u.profile_id
+            INNER JOIN likes AS l ON l.user_id = u.id
+            WHERE ${where.join(" AND ")}
+            ORDER BY l.id DESC
+            LIMIT 20
+        `;
+        
+        try
+        {
+            var response = await this.pool.query(query, values);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let users = new Array<UserCellInfo>();
+
+        if(response.rowCount === 0)
+        {
+            return users;
+        }
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            users.push(await this.model.followsModel.createUserCellInfo(response.rows[i], currentUserId));
+        }
+
+        return users;
+    }
+
     async follow(userId: number, targetHandle: string, followsModel: FollowsModel): Promise<boolean>
     {
         try
