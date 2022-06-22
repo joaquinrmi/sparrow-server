@@ -111,10 +111,10 @@ class CheepsRouter extends Router
 
     private async getTimeline(req: Request, res: Response): Promise<any>
     {
-        let maxTime = new Date().getTime();
-        if(typeof req.query.maxTime === "number")
+        let maxTime = (new Date()).getTime();
+        if(req.query.maxTime !== undefined)
         {
-            maxTime = req.query.maxTime;
+            maxTime = Number(req.query.maxTime);
         }
 
         try
