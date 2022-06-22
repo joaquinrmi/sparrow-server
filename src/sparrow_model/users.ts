@@ -231,7 +231,6 @@ class UsersModel extends BasicModel<UsersDocument>
     {
         let values = new Array<any>();
         let where = new Array<string>();
-        let orderBy = "";
 
         if(options.nameOrHandle !== undefined)
         {
@@ -241,41 +240,20 @@ class UsersModel extends BasicModel<UsersDocument>
                 (LOWER(u.handle) SIMILAR TO '${words}' OR
                 LOWER(p.name) SIMILAR TO '${words}')
             `);
-
-            orderBy = `ORDER BY u.id DESC`;
-        }
-
-        let likeTargetJoin = "";
-        if(options.likeTarget !== undefined)
-        {
-            values.push(options.likeTarget);
-
-            likeTargetJoin = `INNER JOIN likes AS l ON l.user_id = u.id`;
-            where.push(`l.cheep_id = $${values.length}`);
-
-            orderBy = `ORDER BY l.id DESC`;
         }
 
         if(options.offsetId !== undefined)
         {
             values.push(options.offsetId);
-
-            let a = "u.id";
-            if(options.likeTarget !== undefined)
-            {
-                a = "l.id";
-            }
-
-            where.push(`${a} < $${values.length}`);
+            where.push(`u.id < $${values.length}`);
         }
 
         const query = `
             SELECT u.id AS user_id, u.handle, p.name, p.picture, p.description
             FROM users AS u
             INNER JOIN profiles as p ON p.id = u.profile_id
-            ${likeTargetJoin}
             ${where.length > 0 ? "WHERE " + where.join(" AND ") : ""}
-            ${orderBy}
+            ORDER BY u.id DESC
             LIMIT 20
         `;
 
