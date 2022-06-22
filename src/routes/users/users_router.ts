@@ -421,11 +421,6 @@ class UsersRouter extends Router
             searchUsersForm.nameOrHandle = String(req.query.nameOrHandle).split("+");
         }
 
-        if(req.query.likeTarget !== undefined)
-        {
-            searchUsersForm.likeTarget = Number(req.query.likeTarget);
-        }
-
         if(req.query.offsetId !== undefined)
         {
             searchUsersForm.offsetId = Number(req.query.offsetId);
