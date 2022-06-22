@@ -23,6 +23,7 @@ class UsersRouter extends Router
             new RouteMap(MethodType.Get, "/following-list", "getFollowing"),
             new RouteMap(MethodType.Get, "/recommended-list", "getRecommended"),
             new RouteMap(MethodType.Get, "/like-target-list", "getUsersLike"),
+            new RouteMap(MethodType.Get, "/recheep-target-list", "getUsersRecheep"),
             new RouteMap(MethodType.Get, "/search", "searchUsers")
         ]);
 
@@ -37,12 +38,13 @@ class UsersRouter extends Router
         this.registerFunction("getFollowing", this.getFollowing);
         this.registerFunction("getRecommended", this.getRecommended);
         this.registerFunction("getUsersLike", this.getUsersLike);
+        this.registerFunction("getUsersRecheep", this.getUsersRecheep);
         this.registerFunction("searchUsers", this.searchUsers);
 
         this.useMiddleware(this.checkNewUserForm, [ "/create" ]);
         this.useMiddleware(this.checkLoginForm, [ "/login" ]);
 
-        this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list", "/recommended-list", "/lke-target-list", "/search" ]);
+        this.useMiddleware(checkSession, [ "/user-info", "/follow", "/unfollow", "/follower-list", "/following-list", "/recommended-list", "/like-target-list", "/recheep-target-list", "/search" ]);
     }
 
     private async createNewUser(req: Request, res: Response): Promise<any>
@@ -435,6 +437,37 @@ class UsersRouter extends Router
         try
         {
             var usersLike = await req.model.usersModel.getUsersLike(req.session["userId"], likeTarget, offsetId);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        res.status(StatusCode.OK).json(usersLike);
+    }
+
+    private async getUsersRecheep(req: Request, res: Response): Promise<any>
+    {
+        let offsetId: number | undefined;
+        if(req.query.offsetId !== undefined)
+        {
+            offsetId = Number(req.query.offsetId);
+        }
+
+        let recheepTarget: number;
+        if(req.query.recheepTarget === undefined)
+        {
+            return this.error(res, new InvalidFormResponse());
+        }
+        else
+        {
+            recheepTarget = Number(req.query.recheepTarget);
+        }
+
+        try
+        {
+            var usersLike = await req.model.usersModel.getUsersLike(req.session["userId"], recheepTarget, offsetId);
         }
         catch(err)
         {
