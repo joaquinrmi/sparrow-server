@@ -371,6 +371,36 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return result;
     }
 
+    async getAll(currentUserId: number, maxTime: number): Promise<Array<CheepData>>
+    {
+        const query = `
+            SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
+            INNER JOIN users ON users.id = cheeps.author_id
+            INNER JOIN profiles ON profiles.id = users.profile_id
+            WHERE cheeps.date_created < $1
+            ORDER BY cheeps.date_created DESC
+            LIMIT 20
+        `;
+
+        try
+        {
+            var response = await this.pool.query(query, [ maxTime ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let result = new Array<CheepData>();
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            result.push(await this.createCheepData(currentUserId, response.rows[i]));
+        }
+
+        return result;
+    }
+
     async getLikedCheeps(currentUserId: number, userHandle: string, maxTime: number): Promise<Array<CheepData>>
     {
         try
