@@ -294,7 +294,7 @@ class UsersModel extends BasicModel<UsersDocument>
         }
 
         const query = `
-            SELECT l.id AS offset_id u.handle, p.name, p.picture, p.description
+            SELECT l.id AS offset_id, u.handle, p.name, p.picture, p.description
             FROM users AS u
             INNER JOIN profiles AS p ON p.id = u.profile_id
             INNER JOIN likes AS l ON l.user_id = u.id
