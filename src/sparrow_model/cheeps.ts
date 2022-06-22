@@ -280,7 +280,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         if(parameters.quoteTarget !== undefined)
         {
-            whereConditions.push(`(cheeps.quote_target = $${values.length + 1} AND (cheeps.content != NULL OR cheeps.gallery != NULL))`);
+            whereConditions.push(`(cheeps.quote_target = $${values.length + 1} AND (cheeps.content IS NOT NULL OR cheeps.gallery IS NOT NULL))`);
             values.push(parameters.quoteTarget);
         }
 
