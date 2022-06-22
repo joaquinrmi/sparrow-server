@@ -327,6 +327,52 @@ class UsersModel extends BasicModel<UsersDocument>
         return users;
     }
 
+    async getUsersRecheep(currentUserId: number, recheepTarget: number, offsetId: number): Promise<Array<UserCellInfo>>
+    {
+        let values = [ recheepTarget ];
+
+        const where = [ "r.cheep_id = $1" ];
+
+        if(offsetId !== undefined)
+        {
+            values.push(offsetId);
+            where.push(`r.id < $${values.length}`);
+        }
+
+        const query = `
+            SELECT r.id AS offset_id, u.handle, p.name, p.picture, p.description
+            FROM users AS u
+            INNER JOIN profiles AS p ON p.id = u.profile_id
+            INNER JOIN recheeps AS r ON r.user_id = u.id
+            WHERE ${where.join(" AND ")}
+            ORDER BY r.id DESC
+            LIMIT 20
+        `;
+        
+        try
+        {
+            var response = await this.pool.query(query, values);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        let users = new Array<UserCellInfo>();
+
+        if(response.rowCount === 0)
+        {
+            return users;
+        }
+
+        for(let i = 0; i < response.rowCount; ++i)
+        {
+            users.push(await this.model.followsModel.createUserCellInfo(response.rows[i], currentUserId));
+        }
+
+        return users;
+    }
+
     async follow(userId: number, targetHandle: string, followsModel: FollowsModel): Promise<boolean>
     {
         try
