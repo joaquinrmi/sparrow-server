@@ -343,7 +343,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
             INNER JOIN cheeps ON cheeps.author_id = follows.target_id
             INNER JOIN users ON users.id = follows.target_id
             INNER JOIN profiles ON profiles.id = users.profile_id
-            WHERE follows.user_id = $1 AND cheeps.date_created < $2
+            WHERE follows.user_id = $1 AND cheeps.date_created > -1 AND cheeps.date_created < $2
             ORDER BY cheeps.date_created DESC LIMIT 20;`;
 
         try
