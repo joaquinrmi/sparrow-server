@@ -143,7 +143,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
             var cheeps = await this.find({
                 props: [
                     {
-                        id: cheepId
+                        id: cheepId,
+                        author_id: userId
                     }
                 ]
             });
@@ -193,21 +194,14 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         try
         {
-            var deleteCount = await this.delete({
-                props: [
-                    {
-                        id: cheepId,
-                        author_id: userId
-                    }
-                ]
-            });
+            var updateCount = await this.voidCheep(cheepId, userId);
         }
         catch(err)
         {
             throw err;
         }
 
-        return deleteCount > 0;
+        return updateCount > 0;
     }
 
     async deleteRecheep(userId: number, targetId: number): Promise<boolean>
@@ -820,6 +814,49 @@ class CheepsModel extends BasicModel<CheepsDocument>
             userLikesIt: userLikesIt,
             userRecheeppedIt: userRecheeppedIt
         };
+    }
+
+    private async voidCheep(cheepId: number, authorId: number): Promise<number>
+    {
+        const emptyCheep = {
+            date_created: -1,
+            response_target: null,
+            quote_target: null,
+            content: null,
+            gallery: null,
+            comments: 0,
+            recheeps: 0,
+            quotes: 0,
+            likes: 0
+        };
+
+        let columns = new Array<string>();
+        let values = new Array<any>();
+
+        for(let key in emptyCheep)
+        {
+            values.push(emptyCheep[key]);
+            columns.push(`c.${key} = $${values.length}`);
+        }
+
+        values.push(cheepId);
+        let conditions = [ `c.id = $${values.length}` ];
+
+        values.push(authorId);
+        conditions.push(`c.author_id = $${values.length}`);
+
+        const query = `UPDATE cheeps AS c SET ${values.join(", ")} WHERE ${conditions.join(" AND ")} RETURNING *`;
+
+        try
+        {
+            var response = await this.pool.query(query, values);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+
+        return response.rowCount;
     }
 }
 
