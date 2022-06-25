@@ -11,6 +11,8 @@ class ModelError
 }
 
 export enum ModelErrorType
-{}
+{
+    UnavainableHandle
+}
 
 export default ModelError;
