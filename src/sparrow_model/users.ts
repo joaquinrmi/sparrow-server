@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import { decrypt, encrypt } from "../encryption";
 import path from "path";
 import ImageKeeper from "../image_keeper";
@@ -93,21 +93,31 @@ class UsersModel extends BasicModel<UsersDocument>
             throw new UnavailableHandle();
         }
 
+        const client = await this.pool.connect();
+
         try
         {
-            var profileDocument = await this.model.profilesModel.create({
-                name: profileData.name,
-                birthdate: profileData.birthdate,
-                picture: "",
-                join_date: new Date().getTime()
-            });
+            await client.query("BEGIN");
 
-            var userDocument = await this.create({
-                handle: userData.handle,
-                email: userData.email,
-                password: encrypt(userData.password),
-                profile_id: profileDocument.id
-            });
+            var profileDocument = await this.model.profilesModel.create(
+                {
+                    name: profileData.name,
+                    birthdate: profileData.birthdate,
+                    picture: "",
+                    join_date: new Date().getTime()
+                },
+                client
+            );
+
+            var userDocument = await this.create(
+                {
+                    handle: userData.handle,
+                    email: userData.email,
+                    password: encrypt(userData.password),
+                    profile_id: profileDocument.id
+                },
+                client
+            );
 
             const imageKeeper = new ImageKeeper(userDocument.id);
             const defaultPicPath = path.join(__dirname, "..", "..", "img", "profile_default.png");
@@ -125,10 +135,18 @@ class UsersModel extends BasicModel<UsersDocument>
                     picture: profilePic
                 }
             );
+
+            await client.query("COMMIT");
         }
         catch(err)
         {
+            await client.query("ROLLBACK");
+
             throw new DBError(err);
+        }
+        finally
+        {
+            client.release();
         }
 
         return userDocument;
