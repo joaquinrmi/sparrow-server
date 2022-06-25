@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import { If, IsFunction } from "../conditional";
 import BasicDocument, { DocumentAttributes, UpdateDocument } from "./basic_document";
 import SearchQuery from "./search_query";
@@ -62,8 +62,10 @@ class BasicModel<DocumentType extends BasicDocument>
         return res.rowCount > 0;
     }
 
-    async create(document: DocumentAttributes<DocumentType>): Promise<DocumentType>
+    async create(document: DocumentAttributes<DocumentType>, client?: PoolClient): Promise<DocumentType>
     {
+        let pool: Pool | PoolClient = client ? client : this.pool;
+
         let columnNames = new Array<string>();
         let values = new Array<any>();
 
@@ -82,7 +84,7 @@ class BasicModel<DocumentType extends BasicDocument>
 
         try
         {
-            var res = await this.pool.query(query, values);
+            var res = await pool.query(query, values);
         }
         catch(err)
         {
