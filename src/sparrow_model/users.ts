@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from "pg";
+import { Pool } from "pg";
 import { decrypt, encrypt } from "../encryption";
 import path from "path";
 import ImageKeeper from "../image_keeper";
@@ -133,7 +133,8 @@ class UsersModel extends BasicModel<UsersDocument>
                 },
                 {
                     picture: profilePic
-                }
+                },
+                client
             );
 
             await client.query("COMMIT");
