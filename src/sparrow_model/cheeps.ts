@@ -371,7 +371,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
             SELECT ${this.cheepDataColumns.join(", ")} FROM cheeps
             INNER JOIN users ON users.id = cheeps.author_id
             INNER JOIN profiles ON profiles.id = users.profile_id
-            WHERE cheeps.author_id != $1 AND cheeps.date_created < $2
+            WHERE cheeps.author_id != $1 AND cheeps.date_created > -1 AND cheeps.date_created < $2
             ORDER BY cheeps.date_created DESC
             LIMIT 20
         `;
