@@ -10,6 +10,8 @@ import ProfilesModel, { ProfilesDocument } from "./profiles";
 import SparrowModel from "./sparrow_model";
 import UserCellInfo from "./user_cell_info";
 import SearchUsersForm from "../routes/users/search_users_form";
+import UnavailableHandle from "./users_error";
+import { DBError } from "./model_error";
 
 export interface UsersDocument extends BasicDocument
 {
@@ -69,6 +71,28 @@ class UsersModel extends BasicModel<UsersDocument>
 
     async createNewUser(profileData: DocumentAttributes<ProfilesDocument>, userData: DocumentAttributes<UsersDocument>): Promise<UsersDocument>
     {
+        if(this.reservedWords.indexOf(userData.handle.toLowerCase()) !== -1)
+        {
+            throw new UnavailableHandle();
+        }
+
+        try
+        {
+            var checkUser = await this.pool.query(
+                `SELECT u.id FROM users AS u WHERE LOWER(u.handle) = $1`,
+                [ userData.handle.toLocaleLowerCase() ]
+            );
+        }
+        catch(err)
+        {
+            throw new DBError(err);
+        }
+
+        if(checkUser.rowCount > 0)
+        {
+            throw new UnavailableHandle();
+        }
+
         try
         {
             var profileDocument = await this.model.profilesModel.create({
@@ -104,7 +128,7 @@ class UsersModel extends BasicModel<UsersDocument>
         }
         catch(err)
         {
-            throw err;
+            throw new DBError(err);
         }
 
         return userDocument;
