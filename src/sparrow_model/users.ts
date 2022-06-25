@@ -54,12 +54,17 @@ const usersSchema = new Schema<UsersDocument>("users",
 class UsersModel extends BasicModel<UsersDocument>
 {
     private model: SparrowModel;
+    private reservedWords: Array<string>;
 
     constructor(pool: Pool, model: SparrowModel)
     {
         super(usersSchema, pool);
 
         this.model = model;
+
+        this.reservedWords = [
+            "home", "explore", "notifications", "messages", "bookmarks", "compose", "recommended", "search", "settings", "status"
+        ];
     }
 
     async createNewUser(profileData: DocumentAttributes<ProfilesDocument>, userData: DocumentAttributes<UsersDocument>): Promise<UsersDocument>
