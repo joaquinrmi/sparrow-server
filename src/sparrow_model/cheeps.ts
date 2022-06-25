@@ -247,8 +247,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
             whereConditions.push(`LOWER(cheeps.content) SIMILAR TO '${words}'`);
         }
 
-        whereConditions.push(`cheeps.date_created < $${values.length + 1}`);
         values.push(parameters.maxTime);
+        whereConditions.push(`cheeps.date_created > -1 AND cheeps.date_created < $${values.length}`);
 
         if(!parameters.responses)
         {
