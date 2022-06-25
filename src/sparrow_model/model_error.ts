@@ -10,6 +10,18 @@ class ModelError
     }
 }
 
+export class DBError extends ModelError
+{
+    error: any;
+
+    constructor(error: any)
+    {
+        super(ModelErrorType.DBError);
+
+        this.error = error;
+    }
+}
+
 export enum ModelErrorType
 {
     DBError,
