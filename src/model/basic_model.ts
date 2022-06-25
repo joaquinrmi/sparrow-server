@@ -114,8 +114,10 @@ class BasicModel<DocumentType extends BasicDocument>
         return response.rowCount;
     }
 
-    async update(conditions: SearchQuery<DocumentType>, values: UpdateDocument<DocumentType>): Promise<number>
+    async update(conditions: SearchQuery<DocumentType>, values: UpdateDocument<DocumentType>, client?: PoolClient): Promise<number>
     {
+        const pool: Pool | PoolClient = client ? client : this.pool;
+
         let queryValues = [];
         let conditionsStr = this.parseWhere(conditions, queryValues);
         let extraConditionsStr = this.parseExtraConditions(conditions);
@@ -125,7 +127,7 @@ class BasicModel<DocumentType extends BasicDocument>
         {
             if(typeof values[column] === "object" && !Array.isArray(values[column]))
             {
-                columns.push(`${column} = ${(values[column] as { expression: string; }).expression}`)
+                columns.push(`${column} = ${(values[column] as { expression: string; }).expression}`);
             }
             else
             {
@@ -138,7 +140,7 @@ class BasicModel<DocumentType extends BasicDocument>
 
         try
         {
-            var resonse = await this.pool.query(query, queryValues);
+            var resonse = await pool.query(query, queryValues);
         }
         catch(err)
         {
