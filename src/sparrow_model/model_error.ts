@@ -12,6 +12,7 @@ class ModelError
 
 export enum ModelErrorType
 {
+    DBError,
     UnavailableHandle
 }
 
