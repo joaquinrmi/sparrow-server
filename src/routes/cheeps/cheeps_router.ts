@@ -19,7 +19,8 @@ class CheepsRouter extends Router
             new RouteMap(MethodType.Post, "/unlike", "unlikeCheep"),
             new RouteMap(MethodType.Post, "/delete", "deleteCheep"),
             new RouteMap(MethodType.Post, "/delete-recheep", "deleteRecheep"),
-            new RouteMap(MethodType.Get, "/search", "searchCheeps")
+            new RouteMap(MethodType.Get, "/search", "searchCheeps"),
+            new RouteMap(MethodType.Get, "/explore", "getAll")
         ]);
 
         this.registerFunction("createCheep", this.createCheep);
@@ -31,8 +32,9 @@ class CheepsRouter extends Router
         this.registerFunction("deleteCheep", this.deleteCheep);
         this.registerFunction("deleteRecheep", this.deleteRecheep);
         this.registerFunction("searchCheeps", this.searchCheeps);
+        this.registerFunction("getAll", this.getAll);
 
-        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/unlike", "/delete", "/delete-recheep", "/search" ]);
+        this.useMiddleware(checkSession, [ "/create", "/timeline", "/like", "/unlike", "/delete", "/delete-recheep", "/search", "/getAll" ]);
         this.useMiddleware(this.checkNewCheepForm, [ "/create" ]);
     }
 
@@ -266,6 +268,37 @@ class CheepsRouter extends Router
         {
             return this.error(res, new CannotDeleteCheepResponse());
         }
+    }
+
+    private async getAll(req: Request, res: Response): Promise<any>
+    {
+        let maxTime = (new Date()).getTime();
+
+        if(req.query.maxTime !== undefined)
+        {
+            maxTime = Number(req.query.maxTime);
+        }
+
+        try
+        {
+            var cheeps = await req.model.cheepsModel.getAll(req.session["userId"], maxTime);
+        }
+        catch(err)
+        {
+            console.log(err);
+            return this.error(res, new InternalServerErrorResponse());
+        }
+
+        let nextTime = maxTime;
+        if(cheeps.length > 0)
+        {
+            nextTime = cheeps[cheeps.length - 1].dateCreated;
+        }
+
+        res.status(StatusCode.OK).json({
+            cheeps: cheeps,
+            nextTime: nextTime
+        });
     }
 
     private async searchCheeps(req: Request, res: Response): Promise<any>
