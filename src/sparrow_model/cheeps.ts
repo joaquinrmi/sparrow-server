@@ -231,7 +231,15 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
             const cheep = cheepDocuments[0];
 
-            return await this.deleteCheep(userId, cheep.id);
+            if(await this.deleteCheep(userId, cheep.id))
+            {
+                await this.model.profilesModel.unregisterCheep(userId);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         catch(err)
         {
