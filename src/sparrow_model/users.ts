@@ -65,7 +65,7 @@ class UsersModel extends BasicModel<UsersDocument>
         this.model = model;
 
         this.reservedWords = [
-            "home", "explore", "notifications", "messages", "bookmarks", "compose", "recommended", "search", "settings", "status"
+            "home", "explore", "notifications", "messages", "bookmarks", "compose", "recommended", "search", "settings", "status", "signup", "login"
         ];
     }
 
