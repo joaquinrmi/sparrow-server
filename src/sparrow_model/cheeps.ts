@@ -836,16 +836,16 @@ class CheepsModel extends BasicModel<CheepsDocument>
         for(let key in emptyCheep)
         {
             values.push(emptyCheep[key]);
-            columns.push(`c.${key} = $${values.length}`);
+            columns.push(`${key} = $${values.length}`);
         }
 
         values.push(cheepId);
-        let conditions = [ `c.id = $${values.length}` ];
+        let conditions = [ `id = $${values.length}` ];
 
         values.push(authorId);
-        conditions.push(`c.author_id = $${values.length}`);
+        conditions.push(`author_id = $${values.length}`);
 
-        const query = `UPDATE cheeps AS c SET ${values.join(", ")} WHERE ${conditions.join(" AND ")} RETURNING *`;
+        const query = `UPDATE cheeps SET ${columns.join(", ")} WHERE ${conditions.join(" AND ")} RETURNING *`;
 
         try
         {
