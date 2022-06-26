@@ -1,10 +1,9 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
 import EditProfileForm from "../routes/profiles/edit_profile_form";
 import SparrowModel from "./sparrow_model";
-import UsersModel from "./users";
 
 export interface ProfilesDocument extends BasicDocument
 {
@@ -145,13 +144,15 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         }
     }
 
-    async unregisterCheep(userId: number): Promise<void>
+    async unregisterCheep(userId: number, client?: PoolClient): Promise<void>
     {
+        const pool: Pool | PoolClient = client !== undefined ? client : this.pool;
+
         const query = `UPDATE profiles SET cheeps = cheeps - 1 WHERE id = (SELECT profile_id FROM users WHERE id = $1)`;
 
         try
         {
-            await this.pool.query(query, [ userId ]);
+            await pool.query(query, [ userId ]);
         }
         catch(err)
         {
