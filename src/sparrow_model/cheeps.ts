@@ -195,6 +195,10 @@ class CheepsModel extends BasicModel<CheepsDocument>
         try
         {
             var updateCount = await this.voidCheep(cheepId, userId);
+            if(updateCount > 0)
+            {
+                await this.model.profilesModel.unregisterCheep(userId);
+            }
         }
         catch(err)
         {
