@@ -94,8 +94,10 @@ class BasicModel<DocumentType extends BasicDocument>
         return this.createDocument(res.rows[0]);
     }
 
-    async delete(conditions: SearchQuery<DocumentType>): Promise<number>
+    async delete(conditions: SearchQuery<DocumentType>, client?: PoolClient): Promise<number>
     {
+        const pool: Pool | PoolClient = client !== undefined ? client : this.pool;
+
         let values = [];
         let conditionsStr = this.parseWhere(conditions, values);
         let extraConditionsStr = this.parseExtraConditions(conditions);
@@ -104,7 +106,7 @@ class BasicModel<DocumentType extends BasicDocument>
 
         try
         {
-            var response = await this.pool.query(query, values);
+            var response = await pool.query(query, values);
         }
         catch(err)
         {
