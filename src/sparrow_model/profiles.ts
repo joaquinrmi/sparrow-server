@@ -130,13 +130,15 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         };
     }
 
-    async registerNewCheep(userId: number): Promise<void>
+    async registerNewCheep(userId: number, client?: PoolClient): Promise<void>
     {
+        const pool: Pool | PoolClient = client !== undefined ? client : this.pool;
+
         const query = `UPDATE profiles SET cheeps = cheeps + 1 WHERE id = (SELECT profile_id FROM users WHERE id = $1)`;
 
         try
         {
-            await this.pool.query(query, [ userId ]);
+            await pool.query(query, [ userId ]);
         }
         catch(err)
         {
