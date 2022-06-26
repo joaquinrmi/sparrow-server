@@ -181,6 +181,20 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
         }
     }
 
+    async unregisterCheep(userId: number): Promise<void>
+    {
+        const query = `UPDATE profiles SET cheeps = cheeps - 1 WHERE id = (SELECT profile_id FROM users WHERE id = $1)`;
+
+        try
+        {
+            await this.pool.query(query, [ userId ]);
+        }
+        catch(err)
+        {
+            throw err;
+        }
+    }
+
     async edit(userId: number, data: EditProfileForm): Promise<void>
     {
         try
