@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import BasicDocument from "../model/basic_document";
 import BasicModel from "../model/basic_model";
 import Schema from "../model/schema/schema";
@@ -161,48 +161,46 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         const cheepDocument = cheeps[0];
 
-        if(cheepDocument.quote_target !== null)
-        {
-            try
-            {
-                if(cheepDocument.content !== null || cheepDocument.gallery !== null)
-                {
-                    await this.unregisterQuote(cheepDocument.quote_target);
-                }
-                else
-                {
-                    await this.unregisterRecheep(cheepDocument.author_id, cheepDocument.quote_target);
-                }
-            }
-            catch(err)
-            {
-                throw err;
-            }
-        }
-
-        if(cheepDocument.response_target !== null)
-        {
-            try
-            {
-                await this.unregisterComment(cheepDocument.response_target);
-            }
-            catch(err)
-            {
-                throw err;
-            }
-        }
+        const client = await this.pool.connect();
 
         try
         {
-            var updateCount = await this.voidCheep(cheepId, userId);
+            await client.query("BEGIN");
+
+            if(cheepDocument.quote_target !== null)
+            {
+                if(cheepDocument.content !== null || cheepDocument.gallery !== null)
+                {
+                    await this.unregisterQuote(cheepDocument.quote_target, client);
+                }
+                else
+                {
+                    await this.unregisterRecheep(cheepDocument.author_id, cheepDocument.quote_target, client);
+                }
+            }
+
+            if(cheepDocument.response_target !== null)
+            {
+                await this.unregisterComment(cheepDocument.response_target, client);
+            }
+
+            var updateCount = await this.voidCheep(cheepId, userId, client);
             if(updateCount > 0)
             {
-                await this.model.profilesModel.unregisterCheep(userId);
+                await this.model.profilesModel.unregisterCheep(userId, client);
             }
+
+            await client.query("COMMIT");
         }
         catch(err)
         {
+            await client.query("ROLLBACK");
+
             throw err;
+        }
+        finally
+        {
+            client.release();
         }
 
         return updateCount > 0;
@@ -477,7 +475,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async unregisterComment(cheepId: number): Promise<void>
+    async unregisterComment(cheepId: number, client?: PoolClient): Promise<void>
     {
         try
         {
@@ -491,7 +489,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     comments: { expression: "comments - 1" }
-                }
+                },
+                client
             );
         }
         catch(err)
@@ -551,18 +550,21 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return true;
     }
 
-    async unregisterRecheep(userId: number, cheepId: number): Promise<void>
+    async unregisterRecheep(userId: number, cheepId: number, client?: PoolClient): Promise<void>
     {
         try
         {
-            var deleteCount = await this.model.recheepsModel.delete({
-                props: [
-                    {
-                        user_id: userId,
-                        cheep_id: cheepId
-                    }
-                ]
-            });
+            var deleteCount = await this.model.recheepsModel.delete(
+                {
+                    props: [
+                        {
+                            user_id: userId,
+                            cheep_id: cheepId
+                        }
+                    ]
+                },
+                client
+            );
         }
         catch(err)
         {
@@ -586,7 +588,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     recheeps: { expression: "recheeps - 1" }
-                }
+                },
+                client
             );
         }
         catch(err)
@@ -618,7 +621,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async unregisterQuote(cheepId: number): Promise<void>
+    async unregisterQuote(cheepId: number, client?: PoolClient): Promise<void>
     {
         try
         {
@@ -632,7 +635,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     quotes: { expression: "quotes - 1" }
-                }
+                },
+                client
             );
         }
         catch(err)
@@ -828,8 +832,10 @@ class CheepsModel extends BasicModel<CheepsDocument>
         };
     }
 
-    private async voidCheep(cheepId: number, authorId: number): Promise<number>
+    private async voidCheep(cheepId: number, authorId: number, client?: PoolClient): Promise<number>
     {
+        const pool: Pool | PoolClient = client !== undefined ? client : this.pool;
+
         const emptyCheep = {
             date_created: -1,
             response_target: null,
@@ -861,7 +867,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
         try
         {
-            var response = await this.pool.query(query, values);
+            var response = await pool.query(query, values);
         }
         catch(err)
         {
