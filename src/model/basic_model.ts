@@ -42,8 +42,10 @@ class BasicModel<DocumentType extends BasicDocument>
         return this.schema.getTableName();
     }
 
-    async exists(conditions: SearchQuery<DocumentType>): Promise<boolean>
+    async exists(conditions: SearchQuery<DocumentType>, client?: PoolClient): Promise<boolean>
     {
+        const pool: Pool | PoolClient = client !== undefined ? client : this.pool;
+
         let values = [];
         let conditionsStr = this.parseWhere(conditions, values);
         let extraConditionsStr = this.parseExtraConditions(conditions);
@@ -52,7 +54,7 @@ class BasicModel<DocumentType extends BasicDocument>
 
         try
         {
-            var res = await this.pool.query(query, values);
+            var res = await pool.query(query, values);
         }
         catch(err)
         {
