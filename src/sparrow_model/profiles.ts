@@ -133,47 +133,11 @@ class ProfilesModel extends BasicModel<ProfilesDocument>
 
     async registerNewCheep(userId: number): Promise<void>
     {
-        try
-        {
-            var documents = await this.model.usersModel.find(
-                {
-                    props: [
-                        {
-                            id: userId
-                        }
-                    ]
-                },
-                [ "profile_id" ]
-            );
-        }
-        catch(err)
-        {
-            throw err;
-        }
-
-        if(documents.length === 0)
-        {
-            return;
-        }
-
-        const profileId = documents[0].profile_id;
+        const query = `UPDATE profiles SET cheeps = cheeps + 1 WHERE id = (SELECT profile_id FROM users WHERE id = $1)`;
 
         try
         {
-            await this.update(
-                {
-                    props: [
-                        {
-                            id: profileId
-                        }
-                    ]
-                },
-                {
-                    cheeps: {
-                        expression: "cheeps + 1"
-                    }
-                }
-            );
+            await this.pool.query(query, [ userId ]);
         }
         catch(err)
         {
