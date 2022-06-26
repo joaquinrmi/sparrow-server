@@ -103,34 +103,46 @@ class CheepsModel extends BasicModel<CheepsDocument>
 
     async cheep(data: CheepsDocument): Promise<CheepsDocument | null>
     {
-        if(data.quote_target !== undefined)
-        {
-            if(data.content === undefined && data.gallery === undefined)
-            {
-                if(!(await this.registerNewRecheep(data.author_id, data.quote_target)))
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                await this.registerNewQuote(data.quote_target);
-            }
-        }
+        const client = await this.pool.connect();
 
         try
         {
-            var cheepDocument = await this.create(data);
-            await this.model.profilesModel.registerNewCheep(data.author_id);
+            await client.query("BEGIN");
+
+            if(data.quote_target !== undefined)
+            {
+                if(data.content === undefined && data.gallery === undefined)
+                {
+                    if(!(await this.registerNewRecheep(data.author_id, data.quote_target, client)))
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    await this.registerNewQuote(data.quote_target, client);
+                }
+
+                var cheepDocument = await this.create(data, client);
+                await this.model.profilesModel.registerNewCheep(data.author_id, client);
+            }
+
+            if(cheepDocument.response_target !== null)
+            {
+                this.registerNewComment(cheepDocument.response_target, client);
+            }
+
+            await client.query("COMMIT");
         }
         catch(err)
         {
+            await client.query("ROLLBACK");
+
             throw err;
         }
-
-        if(cheepDocument.response_target !== null)
+        finally
         {
-            this.registerNewComment(cheepDocument.response_target);
+            client.release();
         }
 
         return cheepDocument;
@@ -452,7 +464,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         return result;
     }
 
-    async registerNewComment(cheepId: number): Promise<void>
+    async registerNewComment(cheepId: number, client?: PoolClient): Promise<void>
     {
         try
         {
@@ -466,7 +478,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     comments: { expression: "comments + 1" }
-                }
+                },
+                client
             );
         }
         catch(err)
@@ -499,18 +512,21 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async registerNewRecheep(userId: number, cheepId: number): Promise<boolean>
+    async registerNewRecheep(userId: number, cheepId: number, client?: PoolClient): Promise<boolean>
     {
         try
         {
-            var exists = await this.model.recheepsModel.exists({
-                props: [
-                    {
-                        user_id: userId,
-                        cheep_id: cheepId
-                    }
-                ]
-            });
+            var exists = await this.model.recheepsModel.exists(
+                {
+                    props: [
+                        {
+                            user_id: userId,
+                            cheep_id: cheepId
+                        }
+                    ]
+                },
+                client
+            );
         }
         catch(err)
         {
@@ -534,13 +550,17 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     recheeps: { expression: "recheeps + 1" }
-                }
+                },
+                client
             );
 
-            await this.model.recheepsModel.create({
-                user_id: userId,
-                cheep_id: cheepId
-            });
+            await this.model.recheepsModel.create(
+                {
+                    user_id: userId,
+                    cheep_id: cheepId
+                },
+                client
+            );
         }
         catch(err)
         {
@@ -598,7 +618,7 @@ class CheepsModel extends BasicModel<CheepsDocument>
         }
     }
 
-    async registerNewQuote(cheepId: number): Promise<void>
+    async registerNewQuote(cheepId: number, client?: PoolClient): Promise<void>
     {
         try
         {
@@ -612,7 +632,8 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 },
                 {
                     quotes: { expression: "quotes + 1" }
-                }
+                },
+                client
             );
         }
         catch(err)
