@@ -109,6 +109,9 @@ class CheepsModel extends BasicModel<CheepsDocument>
         {
             await client.query("BEGIN");
 
+            var cheepDocument = await this.create(data, client);
+            await this.model.profilesModel.registerNewCheep(data.author_id, client);
+
             if(data.quote_target !== undefined)
             {
                 if(data.content === undefined && data.gallery === undefined)
@@ -122,14 +125,11 @@ class CheepsModel extends BasicModel<CheepsDocument>
                 {
                     await this.registerNewQuote(data.quote_target, client);
                 }
-
-                var cheepDocument = await this.create(data, client);
-                await this.model.profilesModel.registerNewCheep(data.author_id, client);
             }
 
-            if(cheepDocument.response_target !== null)
+            if(data.response_target !== null)
             {
-                this.registerNewComment(cheepDocument.response_target, client);
+                await this.registerNewComment(data.response_target, client);
             }
 
             await client.query("COMMIT");
