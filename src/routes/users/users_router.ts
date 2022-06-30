@@ -198,6 +198,11 @@ class UsersRouter extends Router
         {
             const cookie = JSON.parse(req.cookies["session"]);
 
+            if(cookie === undefined || cookie === null)
+            {
+            	return res.status(StatusCode.Unauthorized).json();
+            }
+
             const userId = cookie.id;
             const sessionKey = cookie.key;
 
