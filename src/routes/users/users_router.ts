@@ -253,19 +253,24 @@ class UsersRouter extends Router
 
     private async logout(req: Request, res: Response): Promise<any>
     {
-        if(typeof req.cookies["session"] === "object")
+        if(req.cookies["session"] !== undefined)
         {
-            try
-            {
-                await req.model.sessionsModel.unregisterSession(req.cookies["session"].userId, req.cookies["session"].key);
-            }
-            catch(err)
-            {
-                console.log(err);
-                return this.error(res, new InternalServerErrorResponse());
-            }
+        	const cookie = JSON.parse(req.cookies["session"]);
 
-            res.cookie("session", JSON.stringify(null));
+        	if(cookie.id !== undefined && cookie.key !== undefined)
+        	{
+        		try
+	            {
+	                await req.model.sessionsModel.unregisterSession(cookie.id, cookie.key);
+	            }
+	            catch(err)
+	            {
+	                console.log(err);
+	                return this.error(res, new InternalServerErrorResponse());
+	            }
+
+	            res.cookie("session", JSON.stringify(null));
+        	}
         }
 
         req.session["userId"] = undefined;
