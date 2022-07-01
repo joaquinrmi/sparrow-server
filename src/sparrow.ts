@@ -2,7 +2,6 @@ import path from "path";
 import express, { Request, Response } from "express";
 import session from "express-session";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import multer from "multer";
 import SparrowModel from "./sparrow_model/";
 import cors from "cors";
@@ -13,7 +12,10 @@ import ProfilesRouter from "./routes/profiles/";
 import CheepsRouter from "./routes/cheeps/";
 import UploadRouter from "./routes/upload/";
 
-dotenv.config();
+if(process.env.NODE_ENV !== "production")
+{
+    require("dotenv").config();
+}
 
 class Sparrow
 {
