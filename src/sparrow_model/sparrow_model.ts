@@ -21,7 +21,22 @@ class SparrowModel
 
     constructor()
     {
-        this.pool = new Pool();
+        if(process.env.DATABASE_URL !== undefined)
+        {
+            this.pool = new Pool(
+                {
+                    connectionString: process.env.DATABASE_URL,
+                    ssl:
+                    {
+                        rejectUnauthorized: false
+                    }
+                }
+            );
+        }
+        else
+        {
+            this.pool = new Pool();
+        }
 
         this.profilesModel = new ProfilesModel(this.pool, this);
         this.usersModel = new UsersModel(this.pool, this);
