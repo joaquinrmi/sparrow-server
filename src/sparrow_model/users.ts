@@ -121,7 +121,8 @@ class UsersModel extends BasicModel<UsersDocument>
 
             const imageKeeper = new ImageKeeper(userDocument.id);
             const defaultPicPath = path.join(__dirname, "..", "..", "img", "profile_default.png");
-            const profilePic = await imageKeeper.saveProfilePicture(defaultPicPath);
+
+            const profilePic = (await imageKeeper.saveProfilePicture(defaultPicPath)).replace("http://", "https://");
 
             await this.model.profilesModel.update(
                 {
