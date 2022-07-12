@@ -38,10 +38,7 @@ class UploadRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        if(imgUrl.indexOf("https") === -1)
-        {
-            imgUrl.replace("http", "https");
-        }
+        imgUrl = imgUrl.replace("http://", "https://");
 
         res.status(StatusCode.Created).json({
             imgUrl
@@ -61,10 +58,7 @@ class UploadRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        if(imgUrl.indexOf("https") === -1)
-        {
-            imgUrl.replace("http", "https");
-        }
+        imgUrl = imgUrl.replace("http://", "https://");
 
         res.status(StatusCode.Created).json({
             imgUrl
@@ -84,10 +78,7 @@ class UploadRouter extends Router
             return this.error(res, new InternalServerErrorResponse());
         }
 
-        if(imgUrl.indexOf("https") === -1)
-        {
-            imgUrl.replace("http", "https");
-        }
+        imgUrl = imgUrl.replace("http://", "https://");
 
         res.status(StatusCode.Created).json({
             imgUrl
