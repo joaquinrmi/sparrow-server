@@ -244,14 +244,13 @@ class UsersModel extends BasicModel<UsersDocument>
 
     async getRecommendedList(currentUserId: number, offsetId: number): Promise<Array<UserCellInfo>>
     {
-        const followQuery = `SELECT count(id) FROM follows WHERE `;
+        const followQuery = `SELECT f.id FROM follows AS f WHERE f.user_id = $1 AND f.target_id = u.id`;
 
         const query = `
             SELECT u.id AS user_id, u.handle, p.name, p.picture, p.description
             FROM users AS u
             INNER JOIN profiles AS p ON p.id = u.profile_id
-            LEFT JOIN follows AS f ON f.user_id = $1 AND f.target_id != u.id
-            WHERE u.id != $1 AND u.id < $2
+            WHERE u.id != $1 AND u.id < $2 AND NOT EXISTS (${followQuery})
             ORDER BY u.id DESC
             LIMIT 20
         `;
